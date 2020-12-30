@@ -7,11 +7,11 @@
 \begin{document}
 
 \chapter{Docker i kubernetes}
-Kao što je spomenuto u prethodnom poglavlju alati koji nam omogućavaju implementaciju mikroservisne arhitekture će se detaljnije obraditi. Čitavo poglavlje je posvećeno ovim alatima jer predstavljaju \textbf{eng. backbone} mikroservisne arhitekture. Da bi se upoznali s konceptom kontejnera moramo spomenuti par stvari o linux kernel-u.
+Kao što je spomenuto u prethodnom poglavlju tehnologije koje nam omogućavaju implementaciju mikroservisne arhitekture će se detaljnije obraditi u ovom poglavlju. Čitavo poglavlje je posvećeno ovim tehnologijama jer predstavljaju \textbf{eng. backbone} mikroservisne arhitekture. Da bi se upoznali s konceptom kontejnera moramo spomenuti par stvari o linux kernel-u.
 \\\\
-\textbf{Namespace} je abstrakcija oko globalnih sistemskih resursa koja procesima unutar namespace-a daje privid da imaju svoju izoliranu instancu globalnih resursa.
+\textbf{Namespace} je abstrakcija na nivou kernela, oko globalnih sistemskih resursa koja procesima unutar namespace-a daje privid da imaju svoju izoliranu instancu globalnih resursa.
 \\\\
-\textbf{Namespace isolation} je koncept koji se koristi u Linux operativnom sistemu da izoliramo procese. Postoje različiti namespace tipovi dostupni na linux platformi, a ovdje su navedeni samo oni usko vezani za koncept kontejnera:
+\textbf{Namespace isolation} je koncept koji se koristi u Linux operativnom sistemu da izoliramo procese korištenjem namespace-a. Postoje različiti namespace tipovi dostupni na linux platformi, a ovdje su navedeni samo oni usko vezani za koncept kontejnera:
 \begin{itemize}
     \item PID namespace osigurava da proces unutar jednog namespace nisu svjesni postojanja proces unutar drugog namespace-a.
     \item Mrežni namespace osigurava izolaciju mrežnih resursa kao što su NIC, iptables, routing tabele, itd.
@@ -24,11 +24,10 @@ Control groups poznatije pod imenom cgroups su komponenta Linux kernela koja omo
 \\\\
 Korištenjem cgroups i namespace izolacije, grupi procesa ili procesu dajemo privid da je njihov namespace izolavana mašina sa svojim resursima. Na osnovu ovih komponenti izgrađeni su kompleksniji sistemi za izolaciju koji se zovu kontejneri.
 \\\\
-U suštini kontejneri, za razliku od virtualnih mašina, izvršavaju virtualizaciju na nivou operativnog sistema. \textbf{Docker} predstavlja jednu od mnogih tehnologija koji omogućavaju ovaj koncept. Postoje i druge tehnologije kao što su CoreOS, containerd, lxc, itd. U ovom radu upoznat ćemo se sa docker-om.
+U suštini kontejneri, za razliku od virtualnih mašina, izvršavaju virtualizaciju na nivou operativnog sistema. \textbf{Docker} predstavlja jednu od mnogih tehnologija koji implementiraju navedene koncepte. Postoje i druge tehnologije kao što su CoreOS, containerd, lxc, itd. 
 \\\\
-Kontejneri predstavljaju samo dio sistema. Drugi dio koji je potreban je orkestracija, deployment i skalabilnost kontejnera. Tehnologija koja nam omogućava navedenu listu zadataka je \textbf{kubernetes}. 
 \section{Docker}
-Kontejner na višem apstrakcijskom nivou predstavlja standardnu jedinicu software-a koja pakuje izvorni kod sa svojim neophodnim zavisnostima i omogućava aplikacijama da se pokreću veoma brzo na različitim okruženjima (portabilnost). Jedna od platformi koja nam omogućava ovaj proces naziva se \textbf{Docker}. Da bi definisali sadržaj nekog kontejnera potrebno je definisati tekstualni dokument na osnovu kojeg docker izgradi \textbf{sliku kontejnera} (engl. container image). Taj tekstualni file nazvan je Dockerfile. Slika kontejnera sadrži aplikaciju i sve njene potrebne zavisnosti da bi se aplikacija mogla pokrenuti bez problema. Slika kontejnera postaje aktivan kontejner kada se pokrene na \textbf{Docker engine}. Iako je kontejner opšti pojam, dalje u ovom radu se odnosi na docker kontejner.\\\\
+Kontejner na višem apstrakcijskom nivou predstavlja standardnu jedinicu software-a koja pakuje izvorni kod sa svojim neophodnim zavisnostima i omogućava aplikacijama da se pokreću veoma brzo na različitim okruženjima (portabilnost). Jedna od platformi koja nam omogućava ovaj proces naziva se \textbf{Docker}. Da bi definisali sadržaj nekog kontejnera potrebno je definisati tekstualni dokument na osnovu kojeg docker izgradi \textbf{sliku kontejnera} (engl. docker image). Taj tekstualni file nazvan je Dockerfile. Slika kontejnera sadrži aplikaciju i sve njene potrebne zavisnosti da bi se aplikacija mogla pokrenuti bez problema. Slika kontejnera postaje aktivan kontejner kada se pokrene na \textbf{Docker engine}. Iako je kontejner opšti pojam, dalje u ovom radu se odnosi na docker kontejner.\\\\
 Docker je izgrađen na principu klijent-server arhitekture. Docker klijent šalje API zahtjeve docker daemon-u koji može biti pokrenut na lokalnoj ili udaljenoj mašini.
 \subsection{Dockerfile}
 Dockerfile predstavlja način da definišemo sadržaj nekog kontejnera pomoću komandi. Komande koje koristi docker su skoro pa identične onima na UNIX sistemu. Primjer jednog jednostavnog Dockerfile dat je ispod.
@@ -44,7 +43,7 @@ EXPOSE 5432
 \end{lstlisting}
 Na osnovu ovog primjera vidimo da je veoma jednostavno definisati sadržaj kontejnera.
 \\\\
-Svaki kontejner se gradi na osnovu neke bazne slike drugog kontejnera. Bazne slike se povlače sa repozitorija slično kao što se to radi u kontroli verzije npr. \textbf{git clone}. Slika kontejnera se sastoji iz slojeva gdje je svaki sloj izmjena na baznoj slici. Koncept je zasnovan na Union file sistemu. Svaki sloj predstavlja jednu liniju iz Dockerfile-a. Kada se slika pokrene ona postaje kontejner i dodaje se jedan sloj preko svih. Svi slojevi slike su read only osim zadnjeg sloja koji je read/write sloj tj. sloja koji se doda nakon pokretanja kontejnera. Ovakav način funkcionisanja nam omogućava da na osnovu jedne slike možemo pokrenuti više instanci kontejnera koji su identični.
+Svaki kontejner se gradi na osnovu neke bazne slike drugog kontejnera. Bazne slike se povlače sa repozitorija slično kao što se to radi u kontroli verzije npr. \textbf{git clone}. Slika kontejnera se sastoji iz slojeva gdje je svaki sloj izmjena na baznoj slici. Koncept je zasnovan na Union file sistemu. Svaki sloj predstavlja jednu liniju iz Dockerfile-a. Kada se slika pokrene ona postaje kontejner i dodaje se jedan sloj preko svih prethodnih. Svi slojevi slike su read only osim zadnjeg sloja koji je read/write sloj tj. sloja koji se doda nakon pokretanja kontejnera. Ovakav način funkcionisanja nam omogućava da na osnovu jedne slike možemo pokrenuti više instanci kontejnera koji su identični.
 \\\\
 Analizom primjera Dockerfile-a možemo reći sljedeće:
 \begin{itemize}
@@ -66,7 +65,7 @@ Kada izvršimo komandu iznad izlistat će nam se sve slike koje imamo na našoj 
 \begin{lstlisting}
 docker run -d -p 5432:5432 postgresbaza:1.0
 \end{lstlisting}
-Sa run komandom pokrećemo naše slike. Opcija -d govori da se kontejner pokrene kao daemon (pozadinski proces), a -p vrši mapiranje porta unutar kontejnera sa portom na host operativnom sistemu. Sada je naša slika postala aktivan kontejner. Da bi pristupili našoj bazi podataka sa terminala host operativnog sistema potrebno je uraditi
+Sa run komandom pokrećemo naše slike. Opcija -d govori da se kontejner pokrene kao daemon (pozadinski proces), a -p vrši mapiranje porta unutar kontejnera sa portom na host operativnom sistemu. Sada je slika postala aktivna instanca kontejner. Da bi pristupili bazi podataka sa terminala host operativnog sistema potrebno je uraditi
 \begin{lstlisting}
 psql -h localhost -U root -d db
 \end{lstlisting}
@@ -97,7 +96,7 @@ docker run -d \
 \end{lstlisting}
 Na ovaj način kreirali smo instancu kontejnera postgresbaza sa memorijom koja će nadživjeti vrijeme života samog kontejnera. Naši podaci će ostati netaknuti nezavisno od pokretanja i zaustavljanja kontejnera.
 \\\\
-Bind mounts rade na sličan način kao i volumes. Bind mount montira direktorij sa host sistema u kontejner. Bitna razlika je u tome što nema nivo izolacije kao sa korištenjem volumes-a jer procesi u kontejneru direktno manipuliraju file sistemom host-a. Pored toga docker nema mogućnost upravljanjem kao što ima nad
+Bind mounts rade na sličan način kao i volumes. Bind mount montira direktorij sa host sistema u kontejner. Bitna razlika je u tome što nemamo nivo izolacije kao sa korištenjem volumes-a jer procesi u kontejneru direktno manipuliraju file sistemom host-a. Pored toga docker nema mogućnost upravljanjem kao što ima nad
 volumes. \\
 Primjer korištenje bind mounts dat je ispod:
 \begin{lstlisting}
@@ -108,9 +107,9 @@ docker run -d \
 \end{lstlisting}
 Izvršenje ove komande je slično onom pri korištenju vol1. Razlika je u tome što se kao volume koristi direktorij sa host operativnog sistema.
 \subsection{Docker mreža}
-Jedna od stvari koji docker čini moćnom platform je to što kontejnere možemo vezivati međusobno ali i sa bilo kojim okruženjem koje podržava umrežavanje (fizički računari, virtualne mašine, itd.). Na linux operativnom sistemu Docker koristi iptables da bi ostvario mrežnu izolaciju, a na windows operativnom sistemu to radi pomoću routing rules-a. Kako u ovom radu i koristimo ubuntu kao okruženje za pokretanje primjera, fokusirat ćemo se na linux. Iptables je alat koji omogućava definisanje pravila filtriranja paketa u Linux kernelu (firewall) kao i implementaciju NAT-a. Duboka analiza načina implementacije izolacije umrežavanja izlazi iz obima rada. Fokus ćemo staviti na praktične primjere primjene mogućnosti koje nam Docker nudi.
+Jedna od stvari koji docker čini moćnom platform je to što kontejnere možemo vezivati međusobno ali i sa bilo kojim okruženjem koje podržava umrežavanje (fizički računari, virtualne mašine, itd.). Na linux operativnom sistemu Docker koristi iptables da bi ostvario mrežnu izolaciju, a na windows operativnom sistemu to radi pomoću routing rules-a. Kako u ovom radu koristimo Ubuntu kao okruženje za pokretanje primjera, fokusirat ćemo se na linux. Iptables je alat koji omogućava definisanje pravila filtriranja paketa u Linux kernelu (firewall) kao i implementaciju NAT-a. Duboka analiza načina implementacije izolacije umrežavanja izlazi iz obima rada. Fokus ćemo staviti na praktične primjere primjene mogućnosti koje nam Docker nudi.
 \subsubsection{CNM}
-Docker mreža je bazirana na Container network modelu (engl. CNM). CNM se sastoji od tri elementa:
+Docker mreža je bazirana na Container network modelu (engl. CNM). CNM je definisao 3 stavke:
 \begin{itemize}
     \item Sandbox u potpunosti izolira mrežu kontejnera od vanjskog svijeta.
     \item Endpoint je kontrolisani gateway koji omogućava prolaz do mreže sandboxa-a.
@@ -160,7 +159,7 @@ Dakle naši kontejneri su pokrenuti i aktivni. Kako nismo specificirali bilo koj
 \begin{lstlisting}
 docker network inspect bridge
 \end{lstlisting}
-Na terminalu dobijemo malo veći ispis.
+Na terminalu dobijemo detaljan ispis.
 \begin{lstlisting}
 [
     {
@@ -224,13 +223,13 @@ Host mrežni mod ne izolira mrežni prostor kontejnera od host operativnog siste
 \end{itemize}
 \newpage
 \section{Kubernetes}
-Kubernetes predstavlja sloj oko kontejnera koji podiže nivo apstrakcije i proširuje mogućnosti pri menadžmentu i orkestraciji kontejnera. Kubernetes je također open source i dio je Cloud Native Computing Foundation. Originalno je dizajniran unutar Google-a međutim kasnije je prerastao u open source program kao dio CNCF-a. Kubernetes je primarno dizajniran da olakša orkestraciju i menadžment na velikoj skali. Postao je defacto standard kod svih velikih javnih cloud provajdera.
+Kubernetes predstavlja sloj oko kontejnera koji podiže nivo apstrakcije i proširuje mogućnosti pri menadžmentu i orkestraciji kontejnera. Kubernetes je također open source i dio je Cloud Native Computing Foundation. Originalno je dizajniran unutar Google-a međutim kasnije je prerastao u open source program kao dio CNCF-a. Kubernetes je primarno dizajniran da olakša orkestraciju i menadžment kontejnera na velikoj skali. Postao je defacto standard kod svih velikih javnih cloud provajdera.
 
 \subsection{Arhitektura}
 Prvi pojam s kojim se susrećemo u Kubernets-u je cluster. \textbf{Cluster} je skup koji se sastoji od više Node-ova. Za definiciju clustera potrebno je definisati šta je to Node. Node predstavlja bare metal ili virtualnu mašinu. Postoje dvije vrste: master node i worker node.
 \subsubsection{Master node}
 \textbf{Master node} je zadužen za kontrolisanje stanja cijelog clustera. Kubernetes je napravljen na principu zadanog stanja i trenutnog stanja. Master node je zadužen da konvergira ka zadanom stanju iz trenutnog stanja.
-Master node održava RESTful web servise za postavljanje upita i definisanje stanja cluster-a. Pristup REST web servisu na master serveru ostvarujemo pomoću \textbf{kubectl} skripte koja nam omogućava da stanje koje smo definisali primjenimo na cluster. Pored manuelne intervencije putem \textbf{kubectl} na Master node-u također su aktivne sljedeće komponente:
+Master node održava RESTful web servise za postavljanje upita i definisanje stanja cluster-a. Pristup REST web servisu na master serveru ostvarujemo pomoću \textbf{kubectl} skripte koja nam omogućava da stanje koje smo definisali primjenimo na cluster sa terminala. Pored manuelne intervencije putem \textbf{kubectl} na Master node-u također su aktivne sljedeće komponente:
 \begin{itemize}
     \item \textbf{Scheduler} je zadužen za raspodjelu \textbf{pod}-ova na worker node-ovima.
     \item \textbf{Replication controllers} se brinu da je pokrenut dovoljan broj podova u bilo kojem trenutku.
@@ -251,24 +250,24 @@ Kubernetes je definisao mrežni model dok je mrežni driver implementiran od tre
     \item Svi pod-ovi mogu komunicirati sa drugim pod-ovima u klasteru korištenjem IP adrese pod-a, bez korištenja NAT-a,
     \item  Izolacija je definisana korištenjem network policy-a
 \end{itemize}
-Kubernetes zadano koristi kubenet driver koji je veoma jednostavan. Networking unutar kubernetes se može objasniti uopšteno. Implementacije se sigurno razlikuju jedna od druge ali koncept je isti. Na slici ispod dat je prikaz komunikacije između pod-ova unutar jednog node-a.
+Kubernetes zadano koristi kubenet driver koji je veoma jednostavan. Networking unutar kubernetes se može objasniti drugačije u ovisnosti koji se network driver koristi. U ovom slučaju je korišten kubenet. Na slici ispod dat je prikaz komunikacije između pod-ova unutar jednog node-a.
 \begin{figure}[H]
 \centering
  \includegraphics[scale=1]{slike/kubernetes_network.pdf}
  \caption{Topologija kubernetes mreže.}
  \label{ref_slika2}
 \end{figure}
-Ako analiziramo sliku možemo primjetiti da postoji velika sličnost sa docker bridge tipom mreže. Razlika se ogleda u tome što pod sadrži više kontejnera koji dijele mrežni namespace. Na taj način omogućena je komunikacija između kontejnera u jednom pod-u korištenjem loopback adrese (localhost). Možemo primjetiti da u jednom pod-u ne možemo imati preklapanja u korištenim portovima na različitim kontejnerima. \\\\Na sljedećoj slici je data topologija mreže gdje je omogućena inter-node komunikacija.
+Ako analiziramo sliku možemo primjetiti da postoji velika sličnost sa docker bridge tipom mreže. Razlika se ogleda u tome što pod sadrži više kontejnera koji dijele mrežni namespace. Na taj način omogućena je komunikacija između kontejnera u jednom pod-u korištenjem loopback adrese (localhost). Posljedica toga je da u jednom pod-u ne možemo imati preklapanja u korištenim portovima na različitim kontejnerima. \\\\Na sljedećoj slici je data topologija mreže gdje je omogućena inter-node komunikacija.
 \begin{figure}[H]
 \centering
  \includegraphics[scale=0.70]{slike/kubernetes_n2n_network.pdf}
- \caption{Topologija kubernetes mreže. Primjer node2node komunikacije.}
+ \caption{Topologija kubernetes mreže. Primjer inter node komunikacije.}
  \label{ref_slika2}
 \end{figure}
-Objasnit ćemo za primjer komunikaciju od Pod1 do Pod4. Kako svaki pod unutar jednog node-a posjeduje jedinstvenu IP adresu ARP rezolucija neće pronaći odgovarajuću IP adresu unutar datog node-a (gdje se nalazi Pod1). Paket onda izlazi van node-a i rutira se prema definisanim pravilima do node-a koji sadrži destinacijsku IP adresu paketa. Slučaj je objašnjen kada se svi podovi nalaze unutar jednog klastera. \\\\
-Modelom je definisano da pod-pod komunikacija ne smije koristiti NAT. Međutim kod node-node komunikacije, gdje destinacijska IP adresa nekog pod-a izlazi van domena klastera, koristi se overlay mreža. Najčešće driveri implementirani od treće strane koriste SNAT mapiranje pri izlasku paketa iz klastera. Mapira se IP adresa izvornog pod-a na IP adresu node-a na kojem se nalazi dati pod. Na ovaj način omogućeno je rutiranje sve do destinacijske IP adrese. Kubenet podržava samo mrežu unutar jednog klastera. Da bi koristili overlay mrežu potrebno je koristiti network drivere kao što su: calico, flannel, ACI (Cisco), kao i mnogi drugi. 
+Objasnit ćemo za primjer komunikaciju od Pod1 do Pod4. Kako svaki pod unutar jednog node-a posjeduje jedinstvenu IP adresu ARP rezolucija neće pronaći odgovarajuću IP adresu unutar datog node-a (gdje se nalazi Pod1). Paket onda izlazi van node-a i rutira se prema definisanim pravilima do node-a koji sadrži destinacijsku IP adresu paketa. Kubenet ne podržava inter node komuminkaciju međutim driveri kao što su Calico podržavaju komunikaciju između pod-ova koji se nalaze na različitim node-ovima. \\\\
+Kod inter node komunikacije, gdje destinacijska IP adresa nekog pod-a izlazi van domena klastera, koristi se overlay mreža. Najčešće driveri implementirani od treće strane koriste SNAT mapiranje pri izlasku paketa iz klastera. Mapira se IP adresa izvornog pod-a na IP adresu node-a na kojem se nalazi dati pod. Na ovaj način omogućeno je rutiranje sve do destinacijske IP adrese. Kubenet podržava samo mrežu unutar jednog klastera. Da bi koristili overlay mrežu potrebno je koristiti network drivere kao što su: C0alico, Flannel, ACI (Cisco), kao i mnogi drugi. 
 \subsubsection{Servisi}
-Kako se u toku vremena pod-ovi mogu rađati i umirati, dolazi do potrebe povezivanja pod-ova sa nekom fiksnom adresom iz adresnog prostora datog node-a ili domenom. Svaki objekat u kubernetes se može označiti pomoću \textbf{labela}. Na osnovu labela moguće je povezati pod objekat sa objektom servis. Na taj način osiguravamo da iako dolazi do internih promjena unutar node-a, s vana pristup određenom podu ostaje nepromijenjen. Servisi dakle predstavljaju abstrakciju pristupa pod-ovima vanjskim korisnicima.\\\\
+Kako se u toku vremena pod-ovi mogu rađati i umirati, dolazi do potrebe povezivanja pod-ova sa nekom fiksnom domenom. Svaki objekat u kubernetes se može označiti pomoću \textbf{labela}. Na osnovu labela moguće je povezati pod objekat sa objektom servis. Na taj način osiguravamo da iako dolazi do internih promjena unutar node-a,  pristup s vana određenom podu ostaje nepromijenjen. Servisi dakle predstavljaju abstrakciju pristupa pod-ovima vanjskim korisnicima. \\\\
 Postoji više tipova servisa:
 \begin{itemize}
     \item ClusterIP definiše tip servisa koji vezuje pod sa domenom. Ovom tipu servisa se može pristupiti samo unutar cluster-a.
@@ -277,7 +276,7 @@ Postoji više tipova servisa:
     \item ExternalName definiše tip servisa koji nam omogućava da definišemo servis koji redirekciju vrši na nivou DNS-a. 
 \end{itemize}
 \subsection{Kubernetes objekti}
-Konfiguracija kubernetes klastera se zasniva na objektima. Objekte definišemo korištenjem yaml zapisa. Slično kao kod ansible-a. Svi pojmovi navedeni u poglavlju Kubernetes: pod, servis, deployment, itd... Mogu se definisati, konfigurisati i primjeniti na klaster. 
+Definicija i konfiguracije kubernetes klastera se zasniva na objektima. Objekte definišemo korištenjem yaml zapisa. Slično kao kod ansible-a. Svi pojmovi navedeni u poglavlju Kubernetes: pod, servis, deployment, itd... Mogu se definisati, konfigurisati i primjeniti na klaster korištenjem kubernetes objekta. 
 \subsubsection{Pods}
 Pod je najmanja jedinica koju možemo deploy-ati na cluster. Unutar jednog pod-a može biti pokrenuto više kontejnera. Pod je dakle omotač oko instanci kontejnera. Pod-ovi su pokrenuti unutar worker node-ova. Analogno instanci kontejnera, pod koristi istu vrstu izolacije. Svrha pod-a je da logički grupira instance kontejnera. Svi kontejneri unutar nekog pod-a dijele kernel namespace. Između ostalog dijele i network namespace što omogućava komunikaciju među kontejnerima unutar datog pod-a. Pod se smatra kao nestabilan jer je moguće da u toku vremena promijeni svoje stanje. Mrežna specifikacije pod-a dakle može biti promijenjena. Možemo zaključiti da se ne možemo osloniti na internu dodjelu adresa pod-ovima za fiksni pristup. \\\\
 Uzmimo za primjer file pod.yaml.
@@ -306,7 +305,7 @@ Da bi aplicirali ovu konfiguraciju direktno na cluster potrebno je koristiti \te
 \begin{lstlisting}
 kubectl apply -f pod.yaml 
 \end{lstlisting}
-Nakon izvršenja komande iznad u terminalu na naš cluster će se primjeniti nova konfiguracija. Ako već ne postoji kreirat će se pod koji sadrži dvije instance kontejnera: tomee i postgresbaza. Aplikacija koju pokreće tomee će moći pristupiti bazi preko localhost:5432. \\\\
+Nakon izvršenja komande iznad u terminalu, na naš cluster će se primjeniti nova konfiguracija. Ako već ne postoji kreirat će se pod koji sadrži dvije instance kontejnera: tomee i postgresbaza. Aplikacija koju pokreće tomee će moći pristupiti bazi preko localhost:5432. \\\\
 U ovom primjeru smo u jedan pod stavili bazu i web server. Preporučljivo je razdvojiti isto u različite podove zbog potreba skalabilnosti.
 \subsubsection{Deployment i ReplicaSet}
 ReplicaSet predstavlja objekat koji omogućava definisanje, konfiguraciju i kreiranje više identičnih pod-ova, na jednom node-u. ReplicaSet omogućava sposobnost self-healing pod-ova. Primjer definisanja ReplicaSet je dat ispod.
@@ -334,7 +333,7 @@ spec:
         ports:
         - containerPort: 8080
 \end{lstlisting}
-ReplicaSet koristi template vrijednost da bi definisala i opisala pod koji će kreirati. Dakle ReplicaSet posjeduje pod objekat i brine se da je deklarisano stanje jednako stanju na node-u. Element replicas definiše broj pod-ova koji će biti kreirani. ReplicaSet radi na principu stalne konvergencije prema definisanom stanju. U slučaju da se u nekim pod-ovima dogodi greška, ReplicaSet će "ubiti" iste i težiti kreiranju broja pod-ova definisanom u replicas elementu. \\\\
+ReplicaSet koristi template vrijednost da bi definisala i opisala pod koji će kreirati. Dakle ReplicaSet sadrži pod objekat u svojoj definiciji i brine se da je deklarisano stanje jednako stanju na node-u. Element replicas definiše broj pod-ova koji će biti kreirani. ReplicaSet radi na principu stalne konvergencije prema definisanom stanju. U slučaju da se u nekim pod-ovima dogodi greška, ReplicaSet će "ubiti" iste i težiti kreiranju broja pod-ova definisanom u replicas elementu. \\\\
 Način na koji se template pod-a povezuje sa ReplicaSet objektom je pomoću selector elementa. Selector element omogućava da na osnovu labela targetiramo kojim pod-ovima ReplicaSet upravlja. ReplicaSet predstavlja objekat koji se sve manje koristi. Postoji bolje alternative koje se mogu koristiti u onosu na ReplicaSet. Jedna od tih alternativa je Deployment. \newpage
 Deployment je objekat koji može posjedovati ReplicaSet objekat. Deployment nam omogućava jasno definisanje načina (deklarativno) na koji će se vršiti update pod-ova. Također moguće je raditi rollback update-a. Primjer definicije u yaml zapisu dat je ispod.
 \begin{lstlisting}
@@ -376,7 +375,7 @@ Na slici ispod je prikazana enkapsulacija navedenih objekata.
  \label{ref_slika2}
 \end{figure}
 \subsubsection{Servisi}
-Način definicije objekta tipa servis je dat ispod.
+Definicija objekta tipa servis omogućava nam da definišemo stalan pristup pod-ovima koji mogu mijenjat svoju IP adresu u toku vremena. Ispod je data definicija objekta tipa NodePort servis.
 \begin{lstlisting}
 apiVersion: v1
 apiVersion: v1
@@ -393,5 +392,71 @@ spec:
       targetPort: 8080
       nodePort: 30080
 \end{lstlisting}
-Definisan je objekat tipa servis koji povezuje svaki pod sa labelom \textbf{app: pod1-app}. Tip servisa je NodePort. NodePort omogućava pristup izvan klastera. 
+Servis se povezuje sa svakim pod-om koji sadrži labelu \textbf{app: pod1-app} u svjoj definiciji. Kako se u toku vremena labela neće promijeniti na ovaj način pristup pod-ovim sa labelom pod1-app će ostati stalan. Da bi pristupili pod-ovima preko servisa dovoljno je uputiti zatjev prema \textbf{1} i DNS rezolucija unutar kubernetesa će izvršti rezoluciju u IP adresu i to na osnovu Round-robin algoritma.
+\subsubsection{Namespace}
+Još jedan bitan aspekt Kubernetes-a je namespace. Namespace nam dozvoljava da grupišemo Kubernetes objekte u logičke grupe i na taj način vršimo razdavajanje istih. Namespace nam omogućava kreiranje virtualnih cluster-a.\\\\
+Definicija kubernetes objekta tipa namespace data je ispod.
+\begin{lstlisting}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: custom_ns_name
+\end{lstlisting}
+Da bi kreirali namespace potrebno je aplicirati ga sa kubectl komandom.
+\begin{lstlisting}
+kubectl apply -f namespace.yaml
+\end{lstlisting}
+Kreairanje drugih objekata u nekom namespace-u korištenjem kubectl omogućeno je proslijeđivanjem dodatnog paramtera.
+\begin{lstlisting}
+kubectl apply -f object.yaml --namespace=custom_ns_name
+\end{lstlisting}
+Na ovaj način object.yaml će biti apliciran samo u \textbf{custom\_ns\_name} namespace-u.
+\newpage
+\subsubsection{NetworkPolicy}
+NetworkPolicy predstavlja veoma bitnu vrstu kubernetes objekta. NetworkPolicy omogućava kontrolu prometa paketa na layer-ima 3 i 4. To znači da na nivou aplikacije možemo definisati pravila komunikacije pod-ova sa entitetima na mreži. Također moguće je razdvojiti kontrolu paketa za egres i ingress promet.
+\\\\
+NetworkPolicy omogućava kontrolu paketa na osnovu:
+\begin{itemize}
+    \item Namespace iz kojeg paket dolazi/odlazi
+    \item Pod-a iz kojeg paket dolazi/odlazi
+    \item IP blok adresa iz kojeg dolazi/odlazi
+\end{itemize}
+Primjer NetworkPolicy objekta je dat ispod.
+\begin{lstlisting}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: test-network-policy
+  namespace: default
+spec:
+  podSelector:
+    matchLabels:
+      role: db
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - ipBlock:
+        cidr: 172.17.0.0/16
+        except:
+        - 172.17.1.0/24
+    - namespaceSelector:
+        matchLabels:
+          project: myproject
+    - podSelector:
+        matchLabels:
+          role: frontend
+    ports:
+    - protocol: TCP
+      port: 6379
+  egress:
+  - to:
+    - ipBlock:
+        cidr: 10.0.0.0/24
+    ports:
+    - protocol: TCP
+      port: 5978
+\end{lstlisting}
+U primjeru je definisan NetworkPolicy za egress i ingress tip prometa. Također su korištena sva tri načina definisanja kontrole, navedena u listi iznad.
 \end{document}

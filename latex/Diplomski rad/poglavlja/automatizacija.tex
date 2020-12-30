@@ -8,7 +8,7 @@
 \begin{document}
 
 \chapter{Automatizacija mreže i infrastrukture}
-U sljedećem dijelu obrađena je procedura automatskog procesa stavljanja u rad kubernetes cluster-a korištenjem Ansible alata za automatizaciju. Zbog troškova i ograničenja sa opremom, te lakše reprodukcije IaC-a definisanog u radu koristit će se Vagrant za simulaciju multi-host okruženja.
+U ovom poglavlju obrađena je procedura automatskog procesa stavljanja u rad kubernetes cluster-a korištenjem Ansible alata za automatizaciju. Zbog ograničenja sa resursima, te lakše reprodukcije IaC-a definisanog u radu koristit će se Vagrant za simulaciju multi-host okruženja.
 \section{Postavljanje Vagrant okruženja}
 Za postavljanje okruženja korišten je sljedeći Vagrantfile.
 \begin{lstlisting}
@@ -36,7 +36,7 @@ Vagrant.configure("2") do |config|
     end
 end
 \end{lstlisting}
-U ovom primjer definisani su resursi za svaku virtualnu mašinu: 2048MB RAM memorije i 2 virtualna CPU-a. Kako se kubernetes cluster sastoji od različitih node-ova potrebno nam je više različitih okruženja.
+U ovom Vagrant file-u definisani su resursi za svaku virtualnu mašinu: 2048MB RAM memorije i 2 virtualna CPU-a. Da bi omogućili kubernetes cluster sa većim brojem node-ova potrebne su nam instance većeg broj virtualnih mašina.
 \newpage 
 Definisane su tri različite mašine (Promjenom vrijednosti N=2 moguće je vršiti izmjenu broja worker node-ova):
 \begin{itemize}
@@ -54,7 +54,7 @@ Za automatizaciju instalacije kubernetes cluster-a definisana su dva playbook-a.
 Playbook master-node.yaml definisan je za provizioniranje k8s-master, a worker-node.yaml za provizioniranje node-1 i node-2.
 \subsection{Definicija inventory file-a}
 Na osnovu Vagrantfile i konfiguracije koja je korištena, definisan je inventory za korištenje pri izvršenju Ansible playbook-a. \\\\
-File hosts.yaml dat je ispod.
+Inventory hosts.yaml dat je ispod.
 \begin{lstlisting}
 all:
   hosts:
@@ -70,7 +70,7 @@ all:
         node-1:
         node-2:
 \end{lstlisting}
-Definisane su dvije grupe master i workers da bi mogli lakše ciljati određenu vrstu node-ova pri izvršenju playbook-a.
+Definisane su dvije grupe master i workers da bi mogli lakše vršiti manipulaiju nad određenom vrstom node-ova.
 \subsection{Provizioniranje k8s-master node-a}
 Definicija playbook-a master-node.yaml data je na sljedećoj stranici. 
 \newpage
@@ -118,8 +118,8 @@ Definicija playbook-a master-node.yaml data je na sljedećoj stranici.
      - cat /home/vagrant/.kube/config
     register: kube_config
 
-  - name: Copy kubeconfig to local file (In ansible playbook directory)
-    local_action: copy content="{{ kube_config.results[0].stdout }}" dest="./config"
+  - name: Copy kubeconfig to .kube/config
+    local_action: copy content="{{ kube_config.results[0].stdout }}" dest="~/.kube/config"
     become: false
 
   handlers:
@@ -127,21 +127,28 @@ Definicija playbook-a master-node.yaml data je na sljedećoj stranici.
       include_tasks: handlers/restart-docker.yaml
 \end{lstlisting}
 \newpage
-Nakon pokretanja sljedeće komande Ansible bi trebao instalirati sve potrebne alate i konfigurisati k8s-master kao validan master node.
+Nakon pokretanja sljedeće komande Ansible će instalirati sve potrebne alate i konfigurisati k8s-master kao validan master node u kubernetes cluster-u.
 \begin{lstlisting}
 ansible-playbook -i inventory master-node.yaml
 \end{lstlisting}
-Iz navedenog playbook-a možemo zaključiti da je potrebno izvršiti niz task-ova da bi uspješno postavili master node. Task-ovi su include-ani unutar playbook jer većinu task-ova možemo iskoristiti za postavljanje worker node-a. Većina task-ova je samo-objašnjavajuća i uključuje instalaciju potrebnih alata kao što su docker, kubectl, kubelet, itd... Task-ovi koje ćemo detaljnije objasniti su:
+Iz navedenog playbook-a možemo primjetiti da je potrebno izvršiti niz task-ova da bi uspješno konfigurisali master node. Task-ovi su defeinisani van playbook-a zbog modularnosti jer većinu task-ova možemo iskoristiti i za konfiguraciju worker node-ova. Taskovi su uvezeni unutar playbook-a.. Većina ih je samo-objašnjavajuća i uključuje instalaciju potrebnih alata kao što su docker, kubectl, kubelet, itd... 
+\\\\
+Ispod je data lista task-ova koje ćemo detaljnije obraditi:
 \begin{itemize}
     \item Kubeadm (tasks/initialize-cluster.yaml)
     \item Calico (tasks/install-calico.yaml)
     \item Kubelet (update-kubelet.yaml)
     \item Generisanje join komande
 \end{itemize}
-\subsubsection{Kubeadm}
-Za inicijalizaciju cluster-a koristimo \textbf{kubeadm}. Kubeadm je alat koji služi za postavljanje minimalnog održivog kubernetes cluster-a koji je u skladu sa najboljom praksom. Kubeadm kao argumente zahtjeva ip adresu na kojoj će biti pokrenut API server za komunikaciju u kontrolnoj ravni. Pored toga zahtjeva i \textbf{--pod-network-cidr} kao pool IP adresa koje će se dodijeljivati pod-ovima unutar cluster-a. Pri inicijalizaciji cluster-a definisat će se \textbf{config} file koji je moguće koristiti za izvršavanje kubectl komandi. Drugi dio task-a zaslužen je da smjesti config file u potreban direktorij.
+\subsubsection{Inicijalizacija cluster-a korištenjem Kubeadm}
+Za inicijalizaciju cluster-a koristimo \textbf{kubeadm}. Kubeadm je alat koji služi za postavljanje minimalnog održivog kubernetes cluster-a koji je u skladu sa najboljom praksom. Kubeadm kao argumente zahtjeva IP adresu na kojoj će biti pokrenut API server za komunikaciju u kontrolnoj ravni. 
+\\\\Također potrebno je proslijediti i argument \textbf{--pod-network-cidr} kojim definišemo pool IP adresa koje će se dodijeljivati pod-ovima unutar cluster-a. Pri inicijalizaciji cluster-a kubeadm kreirati će kube \textbf{config} file koji omogućava kubectl alatu pristup cluster-u. Pored navedenih kubeadm nudi mogućnost proslijeđivanja dodatnih argumenata koje možete pronaći na oficijelnoj kubernetes dokumentaciji.
 \\\\
-Task \textbf{tasks/initialize-cluster.yaml} dat je ispod. Korištena varijabla \textbf{node\_ip=192.168.5.10} je definisana unutar grupe master. Također korištena je varijabla i \textbf{pod\_network\_cidr=192.168.0.0/16}.
+Task \textbf{tasks/initialize-cluster.yaml} dat je ispod. Korištene su sljedeće varijable:
+\begin{itemize}
+    \item \textbf{node\_ip=192.168.5.10}
+    \item \textbf{pod\_network\_cidr=192.168.0.0/16}
+\end{itemize}
 \begin{lstlisting}
 - name: Initialize the Kubernetes cluster using kubeadm
   command: kubeadm init --apiserver-advertise-address="{{ node_ip }}" --apiserver-cert-extra-sans="{{ node_ip }}"  --node-name k8s-master --pod-network-cidr={{ pod_network_cidr }}
@@ -153,9 +160,12 @@ Task \textbf{tasks/initialize-cluster.yaml} dat je ispod. Korištena varijabla \
    - cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
    - chown vagrant:vagrant /home/vagrant/.kube/config
 \end{lstlisting}
-\subsubsection{Calico}
-Calico predstavlja jednu od više implementacija kubernetes networking rješenja. Konfiguracijom calico network deployment-a možemo podesiti čitav spektar načina rada unutar kubernetes cluster-a. Calico radi na layer-u 3. Može raditi sa različitim CNI i IPAM driver-ima, raznim underlay mrežama, u overlay ili non-overlay modu, sa i bez BGP protokola. Također omogućava nam korištenje NetworkPolicy u kubernetes cluster-u.
-\newpage
+Drugi dio task-a specifičan je za implementaciju i kopira kube config file unutar virtualnih mašina da bi mogli manipulisati nad cluster-om korištenjem kubectl unutar virtualnih mašina.
+\subsubsection{Instalacija i konfiguracija Calico network driver-a}
+Calico predstavlja implementaciju kubernetes networking rješenja. Konfiguracijom Calico instalacije na cluster-u možemo podesiti čitav spektar načina operiranja Calico-a unutar kubernetes cluster-a.
+\\\\
+Calico operira na layer-u 3. Pruža mogućnost rada sa različitim CNI plugin-ovima i IPAM driver-ima, raznim underlay mrežama, overlay ili non-overlay modu, sa i bez BGP protokola. Jedna od bitnih stavki je implementacija definisanih \textbf{NetworkPolicy} objekata unutar kubernetes cluster-a.
+\\\\
 Task \textbf{tasks/install-calico.yaml} dat je ispod. 
 \begin{lstlisting}
 - name: Install calico tigera-operator
@@ -166,17 +176,211 @@ Task \textbf{tasks/install-calico.yaml} dat je ispod.
   become: false
   command: kubectl create -f https://docs.projectcalico.org/manifests/custom-resources.yaml
 \end{lstlisting}
-Ova dva task-a zadužena su za instalaciju tigera-operatora i calico custom resources-a. Tigera-operator služi za lakši menadžment calico instalacije i njegove nadogradnje.
-\subsubsection{Kubelet}
-Kubelet je primarni agent koji je instaliran i pokrenu na svakom node-u. Omogućava registraciju node-a na api-server. \\\\
+Tigera operator nam olakšava intsalaciju i menadžment Calico instalacije. Prvi dio task-a je i zadužen da instalira tigera operator na node-u. Drugi dio task-a kreira potrebne CustomResource objekte na cluster-u. Instalacija je prilično eng. straight-forward jer Calico nudi već gotove yaml file-ove potrebne da se instalira Calico networking implementacija na kubernetes cluster-u.
+\subsubsection{Konfiguracija Kubelet-a}
+Kubelet je primarni agent koji je instaliran i pokrenut na svakom node-u. Kubelet se brine da definisani PodSpec bude implementiran na node-u. Pri kreirani cluster-a potrebno je izvršiti registraciju kubelet-a na API server. \\\\
 Task \textbf{tasks/install-calico.yaml} dat je ispod. 
 \begin{lstlisting}
-- name: Install calico tigera-operator
-  become: false
-  command: kubectl create -f https://docs.projectcalico.org/manifests/tigera-operator.yaml
+- name: Touch a kubelet
+  file:
+    path: /etc/default/kubelet
+    state: touch
+    mode: u=rw,g=r,o=r
 
-- name: Install calico custom resources
-  become: false
-  command: kubectl create -f https://docs.projectcalico.org/manifests/custom-resources.yaml
+- name: Configure node ip
+  lineinfile:
+    path: /etc/default/kubelet
+    line: KUBELET_EXTRA_ARGS=--node-ip={{ node_ip }}
+    
+- name: Restart kubelet
+  service:
+    name: kubelet
+    daemon_reload: yes
+    state: restarted
 \end{lstlisting} 
+Proslijeđen je dodatni argument \textbf{KUBELET\_EXTRA\_ARGS=--node-ip=\{\{ node\_ip \}\}}, gdje je \textbf{node\_ip} IP adresa trenutnog node-a. Ovu informaciju će kubelet iskoristiti da izvrši registraciju na API serveru.
+\subsection{Provizioniranje worker node-ova}
+Playbook koji je zalužan za provizioniranje worker node-ova dat je ispod.
+\begin{lstlisting}
+---
+- hosts: workers
+  become: true
+  tasks:
+  - name: Install packages that allow apt to be used over HTTPS
+    include_tasks: tasks/apt-https.yaml
+
+  - name: Install Docker
+    include_tasks: tasks/apt-docker.yaml
+
+  - name: Allow remote connection to the docker daemon
+    include_tasks: tasks/expose-daemon.yaml
+
+  - name: Add vagrant user to docker group
+    user:
+      name: vagrant
+      group: docker
+
+  - name: Disable swap
+    include_tasks: tasks/disable-swap.yaml
+
+  - name: Install Kubernetes tools
+    include_tasks: tasks/apt-kubernetes.yaml
+
+  - name: Touch a kubelet
+    include_tasks: tasks/update-kubelet.yaml
+      
+  - name: Copy the join command to server location
+    copy: src=join-command dest=/tmp/join-command.sh mode=0777
+
+  - name: Join the node to cluster
+    command: sh /tmp/join-command.sh
+
+  handlers:
+    - name: docker status
+      include_tasks: handlers/restart-docker.yaml
+\end{lstlisting}
+Ako uporedimo navedeni playbook sa playbook-om za provizioniranje master node-a primjetit ćemo da su vrlo slični. Međutim par task-ova je uklonjeno jer su specifični samo za master node. 
+\\\\
+Playbook za provizioniranje worker node-ova koristi join komandu koju je generisao master node za pridruživanje cluster-u.
+\newpage
+\subsection{Rezultat}
+Cilj je bio da automatizujemo proces kreiranja kubernetes cluster-a, da automatizujemo konfiguraciju mreže i omogućimo komunikaciju između svakog node-a. \\\\
+Pokretanjem sljedećih komandi postižemo željeni rezultat.
+\begin{lstlisting}
+~/bachelor-thesis/vagrant/kube$ vagrant up
+~/bachelor-thesis/ansible/kube$ ansible-playbook -i inventory master-node.yaml
+~/bachelor-thesis/ansible/kube$ ansible-playbook -i inventory worker-nodes.yaml
+\end{lstlisting}
+Ako se preko SSH protokola spojimo na jednu od mašina pokrenutih pomoću vagranta možemo provjeriti stanje cluster-a.
+\begin{lstlisting}
+vagrant@k8s-master:~$ kubectl get nodes
+NAME         STATUS     ROLES    AGE    VERSION
+k8s-master   Ready      master   5m5s   v1.19.4
+node-1       NotReady   <none>   31s    v1.19.4
+node-2       NotReady   <none>   31s    v1.19.4
+\end{lstlisting}
+Potrebno je određeno vrijeme da bi svaki node promijenio stanje u Ready. Nakon nekog vremena pokretanjem iste komande dobijemo sljedeći ispis.
+\begin{lstlisting}
+vagrant@k8s-master:~$ kubectl get nodes -o wide
+NAME         STATUS   ROLES    AGE     VERSION   INTERNAL-IP 
+k8s-master   Ready    master   7m58s   v1.19.4   192.168.5.10
+node-1       Ready    <none>   3m24s   v1.19.4   192.168.5.11
+node-2       Ready    <none>   3m24s   v1.19.4   192.168.5.12
+\end{lstlisting}
+Svaki node je u stanju u ready. Možemo primjetiti da se IP adrese poklapaju sa onim koje smo i definisali na početku. \\
+Da bi testirali da li mreža funkcioniše deployat ćemo na cluster deployment sa network-multitool docker slikom (\textbf{deploymentnm.yaml}).
+\begin{lstlisting}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: network-multitool-deployment
+  labels:
+    app: network-multitool
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: network-multitool
+  template:
+    metadata:
+      labels:
+        app: network-multitool
+    spec:
+      containers:
+      - name: network-multitool
+        image: praqma/network-multitool:latest
+\end{lstlisting}
+\newpage
+Izvršavanjem sljedeće komande network-multitool-deployment će biti deploy-an na cluster.
+\begin{lstlisting}
+~/bachelor-thesis/kubernetes$ kubectl apply -f deploymentnm.yaml
+deployment.apps/network-multitool-deployment created
+~/bachelor-thesis/kubernetes$ kubectl get all -o wide
+NAME                  IP               NODE    
+pod/network-mult...   192.168.84.129   node-1   
+pod/network-mult...   192.168.247.2    node-2   
+pod/network-mult...   192.168.247.1    node-2 
+\end{lstlisting}
+Možemo primjetiti da se pod-ovi nalaze na različitim node-ovima. Da bi pokazali da je mreža konfigurisana ispravno ping-at ćemo sa \textbf{192.168.84.129} na \textbf{192.168.247.1}.
+\begin{lstlisting}
+~/bachelor-thesis/kubernetes$ kubectl exec -it pod/network-multitool-deployment-7798f47b54-99l9j -- /bash/bin
+bash-5.0# ping 192.168.247.1
+PING 192.168.247.1 (192.168.247.1) 56(84) bytes of data.
+64 bytes from 192.168.247.1: icmp_seq=1 ttl=62 time=0.434 ms
+64 bytes from 192.168.247.1: icmp_seq=2 ttl=62 time=0.557 ms
+64 bytes from 192.168.247.1: icmp_seq=3 ttl=62 time=0.510 ms
+64 bytes from 192.168.247.1: icmp_seq=4 ttl=62 time=0.851 ms
+\end{lstlisting}
+Dakle konfiguracije mreže je bila uspješna. \\\\
+Dalje možemo pokazati konfiguraciju rutiranja unutar cluster-a. Ako pokrenemo sljedeću komandu, unutar k8s-master mašine dobit ćemo prikaz konfiguracije Calico instalacije.
+\begin{lstlisting}
+vagrant@k8s-master:~$ calicoctl get ipPool --output wide
+CIDR             NAT    IPIPMODE   VXLANMODE     DISABLED   SELECTOR   
+192.168.0.0/16   true   Never      CrossSubnet   false      all()      
+\end{lstlisting}
+Možemo primjetiti da se za pod-ove koristi pool adresa koji smo definisali na početku. Komunikacija pod-ova koji se nalaze na različitim node-ovima ostvarena je korištenjem VXLANMODE-a: CrossSubnet. \\\\
+BGP konfiguracija prikazana je ispod.
+\begin{lstlisting}
+vagrant@k8s-master:~$ sudo calicoctl node status 
+Calico process is running.
+
+IPv4 BGP status
++--------------+-------------------+-------+----------+-------------+
+| PEER ADDRESS |     PEER TYPE     | STATE |  SINCE   |    INFO     |
++--------------+-------------------+-------+----------+-------------+
+| 192.168.5.11 | node-to-node mesh | up    | 10:29:35 | Established |
+| 192.168.5.12 | node-to-node mesh | up    | 10:29:58 | Established |
++--------------+-------------------+-------+----------+-------------+
+
+IPv6 BGP status
+No IPv6 peers found.
+\end{lstlisting}
+Vidimo da se u tabeli rutiranja nalaze samo worker node-ovi. U našem slučaju BGP nije potreban jer je koristimo VXLAN only cluster ali zbog demonstracije BGP je konfigurisan.
+\newpage
+Ispod je dat primjer network policy-a koji onemogućava svu komunikaciju između pod-ova.
+\begin{lstlisting}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+\end{lstlisting}
+Aplicirajmo navedeni objekat na kubernetes cluster. Pozicionirajmo se u root direktorij repozitorija.
+\begin{lstlisting}
+kubectl apply -f kubernetes/kube/network-policy.yaml
+\end{lstlisting}
+Ako pokušamo ponovo da izvršimo PING komandu prema 192.168.247.1, dobit ćemo sljedeći ispis.
+\begin{lstlisting}
+bash-5.0# ping 192.168.247.1
+PING 192.168.247.1 (192.168.247.1) 56(84) bytes of data.
+^C
+--- 192.168.247.1 ping statistics ---
+10 packets transmitted, 0 received, 100% packet loss, time 9257ms
+\end{lstlisting}
+Vidimo da je packet loss 100\%, što znači da nijedan paket stigao do destinacije.
+\\\\
+Da bi potvrdili da network policy radi kako bi trebao, uklonit ćemo network policy.
+\begin{lstlisting}
+kubectl delete -f kubernetes/kube/network-policy.yaml
+\end{lstlisting}
+I pokušajmo ponovo izvršiti PING komandu prema 192.168.247.1.
+\begin{lstlisting}
+bash-5.0# ping 192.168.247.1
+PING 192.168.247.1 (192.168.247.1) 56(84) bytes of data.
+64 bytes from 192.168.247.1: icmp_seq=1 ttl=63 time=0.070 ms
+64 bytes from 192.168.247.1: icmp_seq=2 ttl=63 time=0.084 ms
+64 bytes from 192.168.247.1: icmp_seq=3 ttl=63 time=0.068 ms
+64 bytes from 192.168.247.1: icmp_seq=4 ttl=63 time=0.128 ms
+64 bytes from 192.168.247.1: icmp_seq=5 ttl=63 time=0.130 ms
+64 bytes from 192.168.247.1: icmp_seq=6 ttl=63 time=0.128 ms
+^C
+--- 192.168.247.1 ping statistics ---
+6 packets transmitted, 6 received, 0% packet loss, time 5122ms
+rtt min/avg/max/mdev = 0.068/0.101/0.130/0.027 ms
+\end{lstlisting}
+Komunikacija je ponovo uspješna. Dakle Calico implementira pravila definisana NetworkPolicy objektima.
 \end{document}

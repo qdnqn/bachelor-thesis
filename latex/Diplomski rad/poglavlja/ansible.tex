@@ -8,7 +8,7 @@
 \begin{document}
 
 \chapter{Ansible}
-Ansible je alat za menadžment konfiguracije koji se nastao pod okriljem Red Hat organizacije. Pri samom dizajnu alata prilazilo se na način da se što je moguće više pojednostavi definisanje konfiguracije i implementacija iste. Zbog toga ansible za definisanje konfiguracije koristi yaml način zapisa informacija. Key-value parovi omogućavaju definiciju konfiguracije infrastrukture u formatu lahko čitljivom ljudima. \\\\Pored jednostavnosti zapisa koda infrastrukture, Ansible se u potpunosti oslanja na SSH protokol za upravljanje  okruženjima sa kontrolne mašina. Kontrolna mašina je ona na kojoj je instaliran Ansible i sa nje se vrši distribucija konfiguracije na upravljive mašine. Sav promet prolazi direktno preko SSH protokola što isključuje potrebu instaliranja agenata na upravljivim mašinama.
+Ansible je alat za menadžment konfiguracije koji se nastao pod okriljem Red Hat organizacije. Pri samom dizajnu alata prilazilo se na način da se što je moguće više pojednostavi definisanje konfiguracije i implementacija iste. Zbog toga ansible za definisanje i opisivanje konfiguracije koristi yaml način zapisa informacija. Key-value parovi omogućavaju definiciju konfiguracije infrastrukture u formatu lahko čitljivom ljudima. \\\\Pored jednostavnosti zapisa koda infrastrukture, Ansible se u potpunosti oslanja na SSH protokol za upravljanje  okruženjima sa kontrolne mašina. Kontrolna mašina je ona na kojoj je instaliran Ansible i sa nje se vrši distribucija konfiguracije na upravljive mašine. Sav promet prolazi direktno preko SSH protokola što isključuje potrebu instaliranja agenata na upravljivim mašinama.
 \subsection{Instalacija}
 U ovom radu Ansible je instaliran na Ubuntu 18.04 LTS verziji. Prema uputama na oficijelnoj stranici, Ansbile je moguće instalirati na sljeći način (Ubuntu)
 \begin{lstlisting}
@@ -25,14 +25,14 @@ Pokretanjem sljedeće komande u linux terminalu:
 \begin{lstlisting}
 ansible --version
 \end{lstlisting}
-bi trebalo da ispiše nešto slično sljedećem ispisu na terminalu:
+trebali bi dobiti sličan ispis na terminalu:
 \begin{lstlisting}
 ansible 2.10.2
   config file = /etc/ansible/ansible.cfg
   python version = 3.6.9 
 \end{lstlisting}
 \subsection{Postavka okruženja}
-Pored potrebne Ansible instalacije u ovom radu korištena je simulacija okruženja korištenjem Vagrant-a. Vagrant je alat za kreiranje i upravljanje okruženjima na virtualnim mašinama. Na sličan način kao što Docker koristi Dockerfile, Vagrant koristi Vagrantfile za definiciju i konfiguraciju virtualnih mašina.
+Pored potrebne Ansible instalacije u ovom radu korišten je alat za kreiranje virutalnis mašina: Vagrant. Vagrant je alat za kreiranje i upravljanje okruženjima na virtualnim mašinama. Na sličan način kao što Docker koristi Dockerfile, Vagrant koristi Vagrantfile za definiciju i konfiguraciju virtualnih mašina.
 \\\\
 Vagrant se oslanja na hipervizore za kreiranje virtualnih okruženja. U ovom radu koristit ćemo virtualbox. Instalacija na Ubuntu mašinu pokreće se sljedećom komandom.
 \begin{lstlisting}
@@ -48,7 +48,7 @@ mkdir vagrant
 cd vagrant
 touch Vagrantfile
 \end{lstlisting}
-U Vagrantfile-u definišemo naše virtualne mašine. U ovom radu korištena je sljedeća konfiguracija (Vagrantfile).
+U Vagrantfile-u definišemo naše virtualne mašine. Ispod je dat primjer konfiguracije virtualnih mašina korištenih u demonstraciji mogućnosti u ovom radu u sklopu demo direktorija u repozitoriju.
 \begin{lstlisting}
 Vagrant.configure("2") do |config|
   config.vm.define "u1" do |u1|		
@@ -64,24 +64,25 @@ end
 \end{lstlisting}
 Definisane su dvije virtualne mašine sa operativnim sistemom Ubuntu 18.04 LTS. Mrežni mod koji je korišten je private network. Private network omogućava samo konekciju sa host mašine na virtualne mašine. Definisane su dvije jedinstvene IP adrese, iz privatnog spektra, na mreži 192.168.33.0. Na ovaj način možemo pristupiti virtualnim mašinama direktno sa host mašine.
 \\\\
-Kada pokrenemo, unutar direktorija vagrant,
+Kada pokrenemo, unutar direktorija \textbf{vagrant/demo},
 \begin{lstlisting}
 vagrant up
 \end{lstlisting}
 Vagrant će automatski kreirati dvije virtualne mašine za nas. Trenutno koristimo host mašinu na kojoj je instaliran Ansible. Također su pokrenute dvije virtualne mašine na istoj host mašini koje su korištene za simulaciju upravljvih mašina.
 \newpage
 \subsection{Inventories}
-Da bi vršili bilo kakvu vrstu automatizacije korištenjema Ansible alata potrebno je definisati za koje host-ove je zadužen Ansible. Inventories nam pružaju mogućnost definisanja istih. Ansible inventories se mogu dostaviti u više formata; mogu biti statičke ili dinamičke, i mogu sadržavati bitne varijable na osnovu kojih Ansible pravi odluke pri interakciji sa host-ovima. \\\\
-Inventory se sastoji od: hostova, varijabli i grupa. Hostovi predstavljaju domenu ili ip adresu mašina kojima želimo upravljati. Grupe omogućavaju da host-ove grupiramo po nekim osobinama ili ulogama. Varijable možemo definisati na nivou host-a ili grupe. Ako dodijelimo varijablu na nivou grupe svi host-ovi unutar te grupe koriste definisanu varijablu.
+Da bi kreairali bilo kakvu vrstu automatizacije korištenjema Ansible alata potrebno je definisati za koje host-ove je zadužen Ansible. Inventories nam pružaju mogućnost definisanja upravljivih mašina. Ansible inventories se mogu dostaviti u više formata; mogu biti statičke ili dinamičke, i mogu sadržavati bitne varijable na osnovu kojih Ansible pravi odluke pri interakciji sa host-ovima. \\\\
+Inventory se sastoji od: hostova, varijabli i grupa. Host predstavlja domenu ili ip adresu mašine kojom želimo upravljati. Grupe omogućavaju da host-ove grupiramo po nekim osobinama ili ulogama. Varijable možemo definisati na nivou host-a ili grupe. Ako dodijelimo varijablu na nivou grupe svi host-ovi unutar te grupe mogu koristiti definisanu varijablu.
 \subsubsection{Statični inventory}
 Kako samo ime govori statični inventory je statične prirode. Korisnik definiše ručno file u kojem navodi za koje host-ove je Ansible zadužen. Kada se jednom definišu njihova vrijednost se ne mijenja osim ako korisnik ručno ne napravi promjene. Ovaj način je dobar ako je broj mašina kojima se treba upravljat mali i nije promjenjive prirode ili su promjene ne tako česte.\\\\
-Ansible zadano koristi inventory koji se nalazi u \textbf{/etc/ansible/hosts}. Iako možemo koristiti grupe unutar inventory file-a preporučljivo je kreirati inventory za svaki projekat zasebno. Da bi naložili Ansible-u da koristi specifični inventory to možemo uraditi na sljedeći način.
+Ansible zadano koristi inventory koji se nalazi u \textbf{/etc/ansible/hosts}. Iako možemo koristiti grupe unutar inventory file-a preporučljivo je kreirati inventory za svaki projekat zasebno. \\\\ 
+Da bi naredili Ansible-u da koristi specifični inventory koristimo sljedeći način.
 \begin{lstlisting}
 ansible -i InventoryName.yaml all -m ping
 \end{lstlisting}
-Sa -i zastavicom specificirali smo da ansible koristi inventory koji se nalazi u InventoryName.yaml. Opcija all nalaže da Ansible odradi playbook nad svim hostovima odnosno grupama unutar definisanog inventory-ija. Napomena: Ako koristite relativnu putanju onda se morate nalaziti u direktoriji u kojoj se nalazi i inventory. \\\\
-Inventory se sastoji od imena grupa, host-ova i varijabli. Zadane grupe koje postoje su all i ungrouped.
-Definicija inventory.yaml koja definiše host-ove kreairane od strane Vagrant-a data je ispod.
+Sa -i zastavicom specificirali smo da ansible koristi inventory InventoryName.yaml. Parametar all govori da se modul ping izvrši nad svim host-ovima. Moguće je koristi ime grupe umjesto \textbf{all}, da ciljamo određenu grupu host-ova. \\\\
+Inventory se sastoji od imena host-ova, grupa i varijabli. Zadane grupe koje postoje su all i ungrouped.
+Definicija inventory.yaml data je ispod.
 \begin{lstlisting}
 all:
   hosts:
@@ -99,10 +100,10 @@ all:
       vars:
         ansible_user: vagrant
 \end{lstlisting}
-Napomena! Vagrant zadano kreira par javni/privatni ključ pri kreiranju mašine. Također zadani username je \textbf{vagrant}. Da bi vidjeli SSH postavke koje Vagrant koristi potrebno je da u direktoriju, gdje se nalazi Vagrantfile, pokrenemo vagrant ssh-config komandu. Ispis će nam prikazati detaljne informacije o SSH konfiguraciji za svaku virtualnu mašinu. Između ostalog i putanju na host mašini do privatnog ključa potrebnog za autentifikaciju pri SSH konekciji. Tu vrijednost je potrebno upisati u ansible\_ssh\_private\_key\_file. \\\\
-Pokretanjem sljedeće komande možemo provjeriti da li smo dobro definisali inventory.
+Napomena! Vagrant zadano kreira par javni/privatni ključ pri kreiranju mašine. Zadani user \textbf{vagrant} kojeg koristimo pri SSH konekciji. Da bi vidjeli SSH postavke koje Vagrant koristi potrebno je da u direktoriju, gdje se nalazi Vagrantfile, pokrenemo vagrant ssh-config komandu. Ispis će nam prikazati detaljne informacije o SSH konfiguraciji za svaku virtualnu mašinu. Između ostalog i putanju na host mašini do privatnog ključa potrebnog za autentifikaciju pri SSH konekciji. \textbf{Vrijednost privatnog ključa je potrebno upisati u ansible\_ssh\_private\_key\_file. (Unutar ansible/demo/host\_vars/\*)} Nakon toga ansible može pristupiti mašinama.\\\\
+Pokretanjem sljedeće komande možemo provjeriti da li smo dobro definisali inventory (Unutar ansible/demo).
 \begin{lstlisting}
-ansible -i inventory.yaml all -m ping
+ansible -i inventory all -m ping
 \end{lstlisting}
 Sa zastavicom -m definišemo koji modul želimo da Ansible odradi. Ping je jednostavan modul koji vraća pong kao rezultat ako je sve uredu.\\\\
 Nakon pokretanja ove komande Ansible na terminalu vrati sljedeći ispis
@@ -134,7 +135,7 @@ Inventory nam nudi velike mogućnosti pri konfigurisanju bihevioralnih parametar
     \item ansible\_connection
 \end{itemize}
 Listu svih parametara koje je moguće konfigurisati se može pronaći na oficijelnoj dokumentaciji Ansible-a. \\\\
-Iako je moguće u jednom inventory file-u konfigurisati sve host-ove kojima želimo upravljati, na većim projektima poželjno je razdvojiti inventory koristeći strukturu direktorija. \\ Ako napravimo sljedeću strukturu direktorija: \\\\
+Iako je moguće u jednom inventory file-u konfigurisati sve host-ove kojima želimo upravljati, na većim projektima poželjno je razdvojiti inventory koristeći strukturu direktorija. \\ Preporučena struktura direktorija data je ispod. \\\\
 {\footnotesize
 \begin{forest}
   for tree={
@@ -191,7 +192,7 @@ Sadržaj vagrant.yaml dat je ispod.
 \begin{lstlisting}
 ansible_user: vagrant
 \end{lstlisting}
-Sadržaj u1.yaml i u2.yaml je dat ispod.
+Sadržaj u1.yaml i u2.yaml je dat ispod (\textbf{Potrebno prilagoditi okruženju na kojem se nalazite}).
 \begin{lstlisting}
 ansible_host: 192.168.33.10
 ansible_ssh_private_key_file: /home/qdnqn/vagrant/.vagrant/machines/u1/virtualbox/private_key
@@ -202,28 +203,26 @@ ansible_ssh_private_key_file: /home/qdnqn/vagrant/.vagrant/machines/u2/virtualbo
 Možemo zaključiti da je preglednost i lahkoća održavanja mnogo veća u slučaju da je potrebno skalirati projekat na mnogo veći broj host-ova. Što se tiče definicije i konfiguracije ništa se nije promijenilo u odnosu na inventory.yaml sa početka.\\\\
 Pri definisanju hosts.yaml moramo ispoštovati konvenciju u pogledu definisanja all i hosts elemenata, tj. to su elementi koje moramo definisati u yaml file-u. Ako nekom host-u ne dodijelimo grupu on se automatski grupira u ungrouped.
 \subsubsection{Dinamički inventory}
-Zahvaljujući pojavi cloud tehnologija host-ovi se mogu mijenjati na dnevnoj ako ne jednosatnoj bazi. Statički inventory u tom slučaju ne bi bio od velike pomoći. Da se statički inventory održi ažuriranim bio bi zahtjevan posao, a u pogledu aplikacija velikih razmjera bilo bi nemoguće održati ažuriranost sa pravovremenim podacima. Ansible rješava taj problem sa dinamičkim invetory-ima. Ansible može pokupiti podatke o host-ovima sa bilo kojeg izvršnog file-a (eng. executable). Moguće je kreirati skriptu koja bi radila taj posao za vas. Međutim postoji već mnogo kreiranih rješenja za dinamički inventory koji podržava razne izvore podataka među kojima su: Amazon EC2, Microsoft Azure, LDAP directories i mnogi drugi.
+U nekim okruženjima host-ovi se mogu mijenjati na dnevnoj ako ne jednosatnoj bazi. Statički inventory u tom slučaju ne bi bio od velike pomoći. Da se statički inventory održi ažuriranim bio bi zahtjevan posao, a u pogledu aplikacija velikih razmjera bilo bi nemoguće održati ažuriranost sa pravovremenim podacima. Ansible rješava taj problem sa dinamičkim invetory-ima. Ansible može pokupiti podatke o host-ovima sa bilo kojeg izvršnog file-a (eng. executable). Moguće je kreirati skriptu koja bi radila taj posao za vas. Međutim postoji već mnogo kreiranih rješenja za dinamički inventory koji podržava razne izvore podataka među kojima su: Amazon EC2, Microsoft Azure, LDAP directories i mnogi drugi.
 \subsubsection{Dinamički inventory: Amazon AWS}
 Za primjer dinamičkog inventory-ija uzet je Amazon AWS EC2 instances. Ansible se oslanja na python boto3 modul koji je potrebno instalirati da bi mogli koristiti ansible AWS EC2 plugin.
 \begin{lstlisting}
 sudo pip3 install boto3
 \end{lstlisting}
 Definisanje dinamičkog inventory-a je različito za svakog drugog provajdera jer koriste različite plugin-ove. Da bi uopšte omogućili Ansible-u da pravi AWS REST upite prema AWS service API-u potrebno je generisati Access key za korisnika koji ima \textbf{eng. Programmatic access}.
-
 \begin{figure}[H]
 \centering
- \includegraphics[scale=0.5]{slike/add_aws_user.png}
- \caption{Dodavanje novog korisnika sa dovoljnim pristupom na AWS platformi.}
+ \includegraphics[scale=0.81]{slike/add_aws_user.png}
+ \caption{Dodavanje novog korisnika sa programmatic pristupom na AWS platformi.}
  \label{ref_slika2}
 \end{figure}
 
 \begin{figure}[H]
 \centering
- \includegraphics[scale=0.5]{slike/access_keys.png}
+ \includegraphics[scale=0.81]{slike/access_keys.png}
  \caption{Dodavanje novog access key-a na AWS platformi.}
  \label{ref_slika2}
 \end{figure}
-\newpage
 Sa kreiranim ključevima potrebno je definisati dinamički inventory korištenjem već dostupnog modula \textbf{aws\_ec2}. Sadržaj od aws.aws\_ec2.yaml je dat ispod.
 \begin{lstlisting}
 plugin: aws_ec2
@@ -238,7 +237,7 @@ hostnames:
   
 strict_permissions: False
 \end{lstlisting}
-Na slici ispod je prikazan EC2 dashboard u dva slučaja.
+Na slikama ispod je prikazan EC2 dashboard u dva slučaja.
 \begin{figure}[H]
 \centering
  \includegraphics[scale=0.81]{slike/instance1_cropped.png}
@@ -262,8 +261,8 @@ Na slici ispod prikazani su rezultati.
  \caption{Prikaz stanja dinamičkog inventory-a.}
  \label{ref_slika2}
 \end{figure}
-Vidimo da je inventory automatski ažuriran bez ikakve intervencije nad inventory-ijem. Prednosti koje nudi ovakav pristup u okruženju gdje se instance rađaju i umiru na nivou sati je ogroman.\\\\
-Ansible pruža i mogućnost korištenja statičnog i dinamičkog inventory-ija kombinovano.
+Vidimo da je inventory automatski ažuriran bez ikakve intervencije nad inventory-ijem. Prednosti koje nudi ovakav pristup u okruženju gdje se instance rađaju i umiru periodično je značajan.\\\\
+Ansible pruža i mogućnost korištenja kombinovanog inventory-ija.
 \subsection{Ad hoc komande}
 Ad hoc komande služe da direktno iz terminala pokrenemo Ansible module. Neke ad hoc komande su već korištene u radu. Primjer takve komande je dat ispod.
 \begin{lstlisting}
@@ -284,7 +283,7 @@ ansible webservers -m ansible.builtin.service -a "name=httpd state=restarted"
 Iako su ad hoc komande koristan alat za izvršavanje jednostavnijih modula prava moć automatizacije se nalazi u IaC. Ansible nam omogućava da grupišemo zadatke (dalje u tekstu \textbf{eng. task}) u određene grupe. Logička grupacija task-ova naziva se \textbf{Playbook}. Ansible nam omogućava da definišemo playbook u obliku YAML zapisa. \\\\
 Playbook nam omogućava da upravljamo različitim konfiguracijama i kompleksnim deployment-ima. Playbooks se također kao i ad hoc komande oslanjaju na inventory. Playbook predstavlja glavni način definisanja automatizacije task-ova u Ansible-u.
 Playbook definišemo korištenjem yaml zapisa koji predstavlja ništa drugo do listu task-ova koji se izvšavaju jasno određenim redoslijedom. Svaki task pokreće određeni Ansible modul koji odradi zahtjevanu akciju na upravljivim host-ovima.
-\subsubsection{Kreiranje playbook-a}
+\subsubsection{Playbook definicija}
 Kako smo naveli playbook se definiše u yaml zapisu i to čuvanjem u file-ovim sa .yaml/.yml ekstenzijom. Ispod je data definicija jednostavnog playbook-a \textbf{project/user.yaml}. Task koji smo kreirali koristi ugrađeni modul users koji omogućava administriranje korisnika na linux operativnom sistemu. Sa \textbf{state: present} definišemo da je željeno stanje da korisnik postoji.
 \begin{lstlisting}
 - name: Add new user playbook
@@ -334,7 +333,7 @@ u1: ok=2    changed=0   [OMMITED OUTPUT]
 u2: ok=2    changed=0   [OMMITED OUTPUT] 
 \end{lstlisting}
 Ako analiziramo ispis nakon druge iteracije izvršavanja vidimo da se ispis promjenio. Tačnije \textbf{changed=0} nam govori da se, nakon izvršenja playbooka \textbf{project/users.yaml}, stanje na mašinama nije promjenilo jer korisnik sa zadanim parametrima već postoji.
-\subsubsection{Korištenje varijabli i petlji u playbook-a}
+\subsubsection{Varijable i petlje}
 Ansible nam omogućava definisanje varijabli i substituciju vrijednosti varijabli unutar playbook-a. Varijable smo već koristili za kreiranje inventory-ija. Definisali smo \textbf{host\_vars} i \textbf{group\_vars}. Primjer korištenja varijabli unutar playbook-a dat je ispod u file-u \textbf{project/user\_vars.yaml}.
 \begin{lstlisting}
 - name: Add new user playbook
@@ -367,7 +366,7 @@ Ispod je dat primjer korištenja petlji.
         state: present
       loop: "{{ usernames }}"
 \end{lstlisting}
-\subsubsection{Uslovno izvršavanje task-ova}
+\subsubsection{Uslovno izvršavanje}
 Kao dodatni parametar pri definisanju nekog task-a postoji i when. When služi za kreiranje uslovnog izvršavanja nekog task-a. Dakle omogućeno je definisati uslov pri kojem će se task izvršiti. Ansible automatski izvršava ugrađeni task \textbf{gather\_facts}. On se izvršava početkom izvršavanja playbook-a ili adhoc komande. Ovaj task nam prikupi informacije sa upravljive mašine. Prije nego se task-ovi počnu izvršavati imamo informacije sa upravljive mašine. Te informacije su veoma korisne prilikom korištenja uslovnog izvršavanja.\\\\
 Ispod je dat primjer playbook-a sa uslovnim izvršavanjem.
 \begin{lstlisting}
@@ -461,7 +460,7 @@ Primjer je dat ispod (\textbf{project/handlers\_include.yaml}).
 \end{lstlisting}
 Glavna razlika između include i import je u tome što include uvozi dodatne yaml file-ove pri runtime-u (Može se koristiti i u petljama), dok import uvozi pri parsiranju playbook-a (Uvozi samo jednom i ne može se koristiti u petljama).
 \subsubsection{Roles}
-Jedan od glavnih načina dijeljenja i izvoza ansible playbook-ova je korištenjem \textbf{roles}-a. Definisana je standardna struktura koja se koristi za roles i data je ispod. \\\\
+Jedan od glavnih načina pri izvozu playbook-a je korištenjem \textbf{role}-a. Ispod je definisana i data preporučena standardna struktura Ansible projekta. \\\\
 {\footnotesize
 \begin{forest}
   for tree={
@@ -510,9 +509,9 @@ Jedan od glavnih načina dijeljenja i izvoza ansible playbook-ova je korištenje
 \end{forest}
 }
 \\
-Unutar svakog direktorija u role1 nalazi se main.yaml file, ako je taj direktorij potreban za određeni role. U većini slučajeva nisu vam potrebni svih 7 direktorija. Međutim one koje koristite potrebno je kreirati. 
+Unutar svakog direktorija u role1 nalazi se main.yaml file, ako je taj direktorij potreban za određeni role. U većini slučajeva nije vam potrebno svih 7 direktorija. Međutim one koje koristite moramo je kreirati. 
 \\\\
-Role se uvoze na sljedeći način, unutar playbook-a.
+Da bi uvezli role u neki playbook definisat ćemo roles element na sljedeći način.
 \begin{lstlisting}
 ---
 - hosts: all
@@ -520,5 +519,31 @@ Role se uvoze na sljedeći način, unutar playbook-a.
     - role1
 \end{lstlisting}
 \subsection{Jinja2 templates}
+Jinja2 je široko korišten eng. template engine koji je napisan u Python-u. Ansible nudi mogućnost integracije Jinja2 mogućnosti unutar Ansible-a. \\\\
+Definicija jinja2 predložaka se stavlja unutar file-ova koji se nalaze u templates direktoriju unutar Ansible projekta. \\\\
+Primjer je dat ispod (ansible/demo/templates/example.j2).
+\begin{lstlisting}
+Hello world!
+Currently I am runnning on virtual machine with the IP: {{ ansible_host }}
+\end{lstlisting}
+Pokrenimo sljedeći playbook.
+\begin{lstlisting}
+---
+- hosts: 127.0.0.1
+  vars:
+    ansible_host: 127.0.0.1
 
+  tasks:
+    - name: Jinja2 Example
+      template:
+        src: templates/example.j2 
+        dest: /tmp/parsed.txt
+\end{lstlisting}
+Ako pokrenemo playbook i provjerimo na host mašini da li je ispravno parsiran predložak dobit ćemo prikaz kao na slici.
+\begin{figure}[H]
+\centering
+ \includegraphics[scale=0.61]{slike/jinja.png}
+ \caption{Korištenje jinja2 predložaka.}
+ \label{ref_slikajinja}
+\end{figure}
 \end{document}

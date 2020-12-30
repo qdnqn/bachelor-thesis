@@ -65,11 +65,11 @@
 %-------------------------------------------------------------------------------------------------------------------
 % podaci o studentu, mentoru i diplomskom radu potrebni za naslovnicu
 \newcommand{\Student}{Adnan Selimović}
-\newcommand{\StudentIndeks}{Stud}
+\newcommand{\StudentIndeks}{15111}
 \newcommand{\Mentor}{Prof.$~$Dr. Suad Kasapović}
 \newcommand{\NazivPredmeta}{Projektovanje telekomunikacionih mreža}
 \newcommand{\NazivRada}{Automatizacija mreže i infrastrukture}
-\newcommand{\MjestoGodina}{Tuzla, Septembar 2020. godine}
+\newcommand{\MjestoGodina}{Tuzla, Januar 2021. godine}
 \newcommand{\NazivFakulteta}{Fakultet elektrotehnike}
 \newcommand{\Odsjek}{Telekoumnikacije}
 \newcommand{\StudijskiProgram}{Elektrotehnika i računarstvo}
@@ -105,7 +105,7 @@
 \pagenumbering{roman}
 
 % ukljuci sažetak >> sazetak/sazetak_ba.tex <<
-%\input{sazetak/sazetak_ba} 
+\input{sazetak/sazetak_ba} 
 
 % ukljuci sažetak >> sazetak/sazetak_en.tex <<
 %\input{sazetak/sazetak_en} 
@@ -119,7 +119,7 @@
 
 
 % generisanje liste tabela
-\listoftables
+%\listoftables
 
 % generisi listu skracenica 
 % u komandnom prozoru unutar direktorija sa diplomski_rad.tex fileom izvrsiti sljedecu komandu
@@ -139,8 +139,8 @@
 \subfile{poglavlja/docker_kubernetes}
 \subfile{poglavlja/ansible}
 \subfile{poglavlja/automatizacija}
-% \input{poglavlja/automat_mreze_infrastrukt}
-% \input{poglavlja/automat_prod}
+\subfile{poglavlja/deployment}
+\subfile{poglavlja/zakljucak_new}
 
 % ukljuci zakljucak  >> zakljucak.tex <<
 %\input{zakljucak}
@@ -148,12 +148,12 @@
 
 %WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
 % generisanje bibliografije
-%\input{reference}
+\input{reference}
 
 \appendix
 \addcontentsline{toc}{chapter}{Dodatak}
 % ukljuci >> dodatak/dodataka_a.tex <<
-%\input{dodatak/dodatak_a}
+\input{dodatak/dodatak_a}
 % ukljuci >> dodatak/dodataka_b.tex <<
 %\input{dodatak/dodatak_b}
 % ukljuci >> dodatak/dodataka_c.tex <<

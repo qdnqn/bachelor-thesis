@@ -1,0 +1,415 @@
+%wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+% Automatizacija deploymenta
+%wwwwwwwwwwwwwwwww
+
+\documentclass[../diplomskiRad.tex]{subfiles}
+\setlistingyaml
+
+\begin{document}
+
+\chapter{Automatizacija deployment procesa}
+Proces transformacije izvornog koda u artifakte koji su spremni za korištenje često je složen proces. U zavisnosti od jezika u kojem je pisan izvorni kod, koristi se drugačiji alat za automatizaciju procesa. Defacto standard za pakovanje produciranih artifakata postao je kontejnerski pristup, a kubernetes za deployment i okrestraciju kontejnera.
+\\\\
+Dakle u zavisnosti od jezika koji se koristi za razvoj krajnjeg proizvoda koriste se različiti alati koji automatiziraju proces transformacije izvornog koda u artifakte. Međutim često isti alati pružaju dodatne mogućnosti koje omogućavaju automatizaciju i deployment procesa, koji također unosi kompleksnost u čitav proces.
+\\\\
+U ovom radu fokus stavljamo na \textbf{Maven}. Maven je alat za automatizaciju koji se najčešće koristi pri razvoju projekata pisanih u \textbf{Java-i}.
+\subsection{Uvod}
+Koristimo jednostavne REST API aplikacije: application i application-consumer, koje predstavljaju mikroservise. Mikroservisi su napisani u Java-i korištenjem Spring Boot framework-a. Servisi su stateless i podatke spremaju direktno u memoriji. Rade na port-u 8080 i preko HTTP protokola serviraju podatke potrošačima, u JSON formatu. Kako je već spomenuto alat za automatizaciju cijelog build i deployment procesa je maven. Cilj je automatizovati build proces, pakovanje servisa u kontejner i deployment na kubernetes cluster.
+\\\\
+Okruženje koje je korišteno za build proces definisano je u Poglavlju 1. Dodatni alati koje je potrebno instalirati su:
+\begin{itemize}
+    \item openjdk-11
+    \item maven 3.6.3
+    \item openshift paket (korištenjem pip alata)
+\end{itemize}
+\newpage
+\subsection{Arhitektura projekta}
+Na dijagramu ispod prikazana je struktura projekta: application. Sadržaj src direktorija nije prikazan zbog velikog broja elemenata. Direktorij src sadrži izvorni kod aplikacije.
+\\\\
+{\footnotesize
+\begin{forest}
+  for tree={
+    font=\ttfamily,
+    grow'=0,
+    child anchor=west,
+    parent anchor=south,
+    anchor=west,
+    calign=first,
+    edge path={
+      \noexpand\path [draw, \forestoption{edge}]
+      (!u.south west) +(7.5pt,0) |- node[fill,inner sep=1.25pt] {} (.child anchor)\forestoption{edge label};
+    },
+    before typesetting nodes={
+      if n=1
+        {insert before={[,phantom]}}
+        {}
+    },
+    fit=band,
+    before computing xy={l=15pt},
+  }
+[application
+    [k8s
+      [Dockerfile, file
+      ]
+    ],
+    [src
+        [main],
+        [test]
+    ]
+    [pom.xml, file
+    ]
+]
+\end{forest}
+}
+\\
+Direktorij k8s sadrži Dockerfile na osnovu kojeg ćemo izgraditi docker sliku. File pom.xml je file u kojem definišemo konfiguraciju za projekat na osnovu kojeg maven izvršava određene akcije u svojim ciklusima. Druga aplikacija: application-consumer prati istu konvenciju jer maven zahtjeva takvu strukturu projekta. Ispod je data arhitektura mikroservisa na kubernetes cluster-u.
+\begin{figure}[H]
+\centering
+ \includegraphics[scale=1]{slike/application-architecture.pdf}
+ \caption{Topologija mikroservisa na kubernetes cluster-u.}
+ \label{ref_slika2}
+\end{figure}
+\subsection{Maven}
+Maven je alat za automatizaciju build procesa i najčešće se koristi u Java projekatima. Moguće je koristiti maven i za projekte pisane u drugim jezicima. Maven koristi pom.xml kao izvor informacija o artifaktima koji su proizvod build procesa, zavisnostima i drugim eksternim modulima. POM je skraćenica za engl. Project Object Model i sadrži sve informacije o projektu. Svaki pom nasljeđuje super-pom.xml koji sadrži detalnje informacije o projektu.
+\\\\
+Primjer početnog pom.xml file-a za application mikroservis dat je ispod.
+\begin{lstlisting}
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.app.rest</groupId>
+	<artifactId>springbootrest</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
+
+	<name>SprintBootRest</name>
+	<description>Spring Boot2 REST API</description>
+
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.0.5.RELEASE</version>
+		<relativePath />
+	</parent>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<java.version>1.8</java.version>
+
+		<docker.image.host/>
+		<docker.image.name>rest</docker.image.name>
+		<docker.image.tag>1.0.0</docker.image.tag>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>
+\end{lstlisting}
+\subsubsection{Parent, Dependencies i properties}
+Maven formira ime produciranih artifakata u sljedećem formatu: <groupId>:<artifactId>:<version>. Zbog toga i prva tri XML elementa su groupId, artifactId i version. Packaging definiše format u kojem se finalni artifakt pakuje. Name i description elementi sadrže dodatni opis o projektu. 
+\\\\
+Pored navedenih, u pom.xml navedeni su još i parent, properties i dependencies elementi.
+\\\\
+Dependencies služi za upravljavanje ovisnostima unutar projekta. Maven automatski povlači artifakte koji su navedeni kao ovisnosti. Ako pročitamo vrijednosti unutar dependencies elementa vidimo da naš projekat ovisi o:
+\begin{itemize}
+    \item spring-boot-starter-web
+    \item spring-boot-starter-test
+\end{itemize}
+Element parent predstavlja jednu vrstu ovisnosti. Ako projekat ima vezu parent-child sa eksternim artifaktima, pogodno je koristiti parent. Vidimo da projekat nasljeđuje spring-boot-starter-parent. Na ovaj način pom.xml od parent-a i pom.xml od child-a se sjedinjuju. Ovaj pristup je koristan ako želimo imat centraliziran pom.xml file za projekte koji imaju više modula.
+\\\\
+Properties su varijable koje možemo definisati i koristiti unutar pom.xml file-a.
+\subsubsection{Phases, goals, profiles and plugins}
+Maven odrađuje potrebne akcije u fazama. Svaka faza sadrži više ciljeva (engl. goals). Najvažnije faze su navedene ispod:
+\begin{lstlisting}
+validate
+compile
+test-compile
+test
+package
+integration-test
+install
+deploy
+\end{lstlisting}
+Da bi pokrenuli maven fazu potrebno je pokrenuti sljedeću komandu u terminalu.
+\begin{lstlisting}
+mvn install
+\end{lstlisting}
+Na ovaj način smo definisali da želimo pokrenuti install fazu. Maven će implicitno pokrenuti sve faze koje se nalaze ispred install i na kraju pokrenuti install fazu. Pokretanjem install faze, unutar direktorije projekta kreira se novi direktorij target. U njemu se smještaju svi producirani arftifakti nakon završetka zadatog maven životnog ciklusa.
+\\\\
+Pored pokretanja faza, maven omogućava pokretanje specificnog cilja. Faze u biti predstavljaju logičku grupaciju ciljeva. Ciljevi su definisani u maven plugin-ovima. Najčešće grupiranje ciljeva se vrši na način da se cilj veže za neku fazu u konfiguraciji i na taj način omogućavamo da pokretanjem faze, pokrenemo i cilj. Što je i slučaj za primjer pokretanja install faze.
+\\\\
+Moguće je da se cilj ne veže ni za jednu fazu. Ako želimo pokrenuti cilj direktno sa terminala, moramo uraditi sljedeće.
+\begin{lstlisting}
+mvn install:install
+\end{lstlisting}
+Sa druge strane ako postoji faza za koju nije vezan niti jedan cilj, ta faza se neće izvršiti. Moguće je pozivati više ciljeva izvršavajući mvn komandu.
+\begin{lstlisting}
+mvn clean install
+\end{lstlisting}
+Nakon izvršavanja komande iznad maven će očistiti target direktorij i ponovo izvršiti build artifakata. Treba napomenuti da se faze/ciljevi izvršavaju sekvencijalno kako su i navedeni.
+\\\\
+U početni pom.xml (application mikroservis) dodani su sljedeći elementi, u <project> sekciju. Možemo vidjeti da smo predstavili nove elemente: profile i plugin. 
+\begin{lstlisting}
+<profiles>
+		<profile>
+			<id>build-wnode-1</id>
+			<properties>
+				<docker.image.host>tcp://192.168.5.11:2375/</docker.image.host>
+			</properties>
+		</profile>
+		<profile>
+			<id>build-wnode-2</id>
+			<properties>
+				<docker.image.host>tcp://192.168.5.12:2375/</docker.image.host>
+			</properties>
+		</profile>
+		<profile>
+			<id>deploy</id>
+			<build>
+		        <plugins>
+		          <plugin>
+		            <groupId>org.codehaus.mojo</groupId>
+		            <artifactId>exec-maven-plugin</artifactId>
+		            <version>3.0.0</version>
+
+		            <configuration>
+		              <executable>ansible-playbook</executable>
+		              <arguments>
+		                <argument>-i</argument>
+		                <argument>inventory</argument>
+		                <argument>../ansible/kube/deploy-application.yaml</argument>
+		              </arguments>
+		            </configuration>
+		          </plugin>
+		        </plugins>
+		      </build>
+		</profile>
+	</profiles>
+\end{lstlisting}
+Profili nam omogućavaju da definišemo konfiguraciju koju želimo da pokrenemo samo u određenom slučaju. Profili su zadano ignorisani od strane maven-a. Potrebno je uključiti profile ako želimo da se primjene u konfiguraciji. Jedan od načina aktivacije profila je direktno sa terminala.
+\begin{lstlisting}
+mvn clean install -Pbuild-wnode-1,deploy
+\end{lstlisting}
+Na ovaj način aktivirani su profili build-wnode-1 i deploy. Ako već postoje elementi definisani u pom.xml, koji se također nalaze u aktiviranom profilu, tada će maven prepisati vrijednosti postojećih elemenata ili izvršiti sjedinjavanje ako je to moguće.
+\subsubsection{docker-maven-plugin}
+Plugin smo već spomenuli u kontekstu maven-a. Maven nudi standardne plugin-ove kao što su install ili clean. Kompletna lista se nalazi u oficijelnoj dokumentaciji. Pored osnovnih plugin-ova moguće je koristiti third-party plugin-ove. Zadnji dio slagalice upravo i predstavlja third-party plugin: docker-maven-plugin.
+\begin{lstlisting}
+<plugins>
+  	<plugin>
+        <groupId>io.fabric8</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <version>0.34.0</version>
+
+        <configuration>
+          <dockerHost>${docker.image.host}</dockerHost>
+          <images>
+          	<image>
+              <name>${docker.image.name}:${docker.image.tag}</name>
+              <build>
+                <dockerFile>Dockerfile</dockerFile>
+                <contextDir>
+                  ${project.basedir}/k8s
+                </contextDir>
+                <assembly>
+                  <inline>
+                    <id>webapp</id>
+                    <files>
+                      <file>
+                        <source>${project.build.directory}/${project.build.finalName}.${project.packaging}</source>
+                        <outputDirectory>/</outputDirectory>
+                        <destName>${project.build.finalName}.${project.packaging}</destName>
+                      </file>
+                    </files>
+                  </inline>
+                </assembly>
+              </build>
+            </image>
+          </images>
+        </configuration>
+    </plugin>
+</plugins>
+\end{lstlisting}
+Plugin docker-maven-plugin služi za automatsku manipulaciju nad slikama pomoću maven-a. U specifičnom slučaju za deployment application servisa, urađeno je sljedeće: Kada se kreira finalni artifakt u JAR pakovanju, kopira se Dockerfile iz k8s direktorija u target direktorij. Dockerfile se procesira, te vrijednosti iz maven properties varijabli se zamjenjuju sa placeholder-ima unutar Dockerfile-a. Nakon toga vrši se kreiranje slike sa imenom koji smo definisali u properties elementu.
+\\\\
+Unutar Dockerfile vrši se kopiranje finalnog artifakta, unutar slike i definiše se entrypoint koji pri pokretanju kontejnera sa kreiranom slikom, pokreće isti artifakt. To znači da se pokreće mikroservis application.
+\\\\
+Dockerfile je dat ispod.
+\begin{lstlisting}
+FROM openjdk:11-jre
+
+COPY maven/${project.build.finalName}.${project.packaging} /usr/src/rest/rest.jar
+WORKDIR /usr/src/rest
+
+ENTRYPOINT ["java", "-jar", "rest.jar"]
+\end{lstlisting}
+Bitno je spomenuti da docker-maven-plugin nudi mogućnost korištenja udaljenog docker daemon-a. Upravo element <dockerHost> i definiše koji se docker deamon koristi. Ova opcija je iskorištena da na worker node-ovima izgradimo slike jer pri deploymentu kubernetes deployment će morati pronaći slike mikroservisa. Preporučen način bio bi korištenjem neke vrste registry-ija za docker slike. Međutim zbog jednostavnosti implementacije i uštede u ovom radu nije korišten registry za docker slike, te je implementirano na način da kreiramo slike direktno na worker node-u.
+\\\\
+Jedna važna napomena. Unutar ansible/kube/worker-playbook.yaml nalazi se task za omogućavanje eksterne konekcije na docker daemon. Ovaj način pristupa nije siguran jer omogućava bilo kome da se poveže na docker daemon i izvršava komande koje želi. Preporučen način otvaranja komunikacije sa docker daemon generisanjem certifikata i privatnih ključeva za pristup. Zbog jednostavnosti u ovom radu direktno je otvorena komunikacija na worker node-ovima bez autentifikacije.
+\\\\
+Na kraju je korišten plugin exec. Plugin exec omogućava da pokrenemo eksterne alate/komande/programe direktno iz maven-a. U ovom slučaju exec pokreće Ansible playbook koji je zadužen za deployment aplikacije.
+\newpage
+\subsubsection{Automatski deployment pomoću Ansible-a}
+Da bi mogli pokrenuti navedeni playbook potrebno je instalirati ovisnost.
+\begin{lstlisting}
+pip3 install openshift
+\end{lstlisting}
+Playbook se pokreće na lokalnoj mašini i koristi kube config file koji se nalazi u ~/.kube/ direktoriju. Ansible playbook zadužen za deployment dat je ispod.
+\begin{lstlisting}
+---
+- hosts: localhost
+  tasks:
+  - name: Deploy application to the cluster
+    k8s:
+      api_version: v1
+      namespace: default
+      definition:
+        kind: Deployment
+        metadata:
+          labels:
+            app: rest-app
+          name: rest-app-deploy
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app: rest-app
+          template:
+            metadata:
+              labels:
+                app: rest-app
+            spec:
+              containers:
+                - name: rest-app
+                  image: rest:1.0.0
+                  ports:
+                    - containerPort: 8080
+                      protocol: TCP
+  - name: Deploy service to the cluster
+    k8s:
+      api_version: v1
+      namespace: default
+      definition:
+        kind: Service
+        metadata:
+          labels:
+            app: rest-app
+          name: rest-app-svc
+        spec:
+          ports:
+          - port: 80
+            targetPort: 8080
+          selector:
+            app: rest-app
+          type: ClusterIP
+\end{lstlisting}
+Ansible automatski kreira potrebne objekte na kubernetes cluster-u, pokretanjem ovog playbook-a. Ista implementacija je korištena i za mikroservis application-consumer.
+\newpage
+\subsection{Rezultat}
+Pod pretpostavkom da je cluster deployan korištenjem playbook-ova iz prethodnog poglavlja, deployat ćemo mikroservise na kubernetes cluster.
+\\\\
+Pozicionirani u root direktoriju repozitorija, pokrenut ćemo sljedeće komande.
+\begin{lstlisting}
+cd application
+
+mvn clean install
+mvn docker:build -Pbuild-wnode-1
+mvn docker:build -Pbuild-wnode-2
+mvn exec:exec -Pdeploy
+\end{lstlisting}
+Pokretanjem ovih komandi producirani su artifakti, docker slika je izgrađena na node-1 i node-2 i kreirani su kubernetes objekti na cluster-u.
+\\\\
+Nakon toga pozicionirajmo se u application-consumer i pokrenimo sljedeće komande.
+\begin{lstlisting}
+cd ../application-consumer
+
+mvn clean install
+mvn docker:build -Pbuild-wnode-1
+mvn docker:build -Pbuild-wnode-2
+mvn exec:exec -Pdeploy
+\end{lstlisting}
+Sada su deployani application i application-consumer na kubernetes cluster.
+\\\\
+Ako se spojimo preko SSH protokola na node-1 i pokrenemo sljedeću komandu:
+\begin{lstlisting}
+vagrant@node-1:~$ docker images
+REPOSITORY                  TAG       IMAGE ID       
+rest-consumer               1.0.0     4776cda185d3  
+rest                        1.0.0     6d12aa6ade86
+k8s.gcr.io/kube-proxy       v1.20.1   e3f6fcd87756 
+openjdk                     11-jre    94321aa03ce0
+calico/pod2daemon-flexvol   v3.17.1   819d15844f0c 
+calico/cni                  v3.17.1   64e5dfd8d597
+calico/node                 v3.17.1   183b53858d7d 
+calico/typha                v3.17.1   919a16510f41
+k8s.gcr.io/pause            3.2       80d28bedfe5d 
+\end{lstlisting}
+Dakle rest i rest-consumer slike postoje na node-1. Ispis za node-2 je dat ispod.
+\begin{lstlisting}
+vagrant@node-2:~$ docker images
+REPOSITORY                            TAG       IMAGE ID  
+rest-consumer                         1.0.0     fcb8448c93af
+rest                                  1.0.0     829fa5592bf2
+k8s.gcr.io/kube-proxy                 v1.20.1   e3f6fcd87756
+openjdk                               11-jre    94321aa03ce0
+calico/pod2daemon-flexvol             v3.17.1   819d15844f0c
+calico/cni                            v3.17.1   64e5dfd8d597
+calico/node                           v3.17.1   183b53858d7d
+calico/typha                          v3.17.1   919a16510f41
+k8s.gcr.io/pause                      3.2       80d28bedfe5d
+\end{lstlisting}
+Docker slike su izgrađene na oba worker node-a. 
+\newpage
+Analizirajmo sada kubernetes objekte.
+\begin{lstlisting}
+~/bachelor-thesis$ kubectl get pods
+NAME                                       READY   STATUS
+rest-app-consumer-deploy-9b84fb9c5-nx9js   1/1     Running
+rest-app-consumer-deploy-9b84fb9c5-qvzlg   1/1     Running
+rest-app-consumer-deploy-9b84fb9c5-xfmpz   1/1     Running 
+rest-app-deploy-95cbc5c8-6kzn6             1/1     Running 
+\end{lstlisting}
+Vidimo da su svi pod-ovi kreirani i da su staju Ready. Postoje 3 consumer pod-a i 1 provider pod.
+\begin{lstlisting}
+$ kubectl get services
+NAME                    TYPE           CLUSTER-IP                            
+kubernetes              ClusterIP      10.96.0.1                         
+rest-app-consumer-svc   ClusterIP      10.97.201.109                         
+rest-app-svc            ClusterIP      10.97.173.76                       
+\end{lstlisting}
+Kreirana su i 2 servisa koji su povezani sa pod-ovima rest-app i rest-app-consumer. Dakle mikroservisi su deployani na kubernetes cluster. Omogućimo sad pristup izvana kubernetes cluster-u. Da bi to uradili u našem slučaju koristit ćemo port-forward.
+\begin{lstlisting}
+kubectl port-forward rest-app-consumer-svc 8080:80
+\end{lstlisting}
+Provjerit ćemo da li mikroservisi rade pomoću curl alata.
+\begin{lstlisting}
+$ curl  http://localhost:8080/employees/1
+{"id":1,"firstName":"Adnan","lastName":"Selimovic","email":"adnan.selimovic@email.com"}
+\end{lstlisting}
+Uspješan odgovor. Kako je kreirano samo 6 unosa u Employees listi, pokušajmo dohvatiti korisnika koji je povezan sa ID 7.
+\begin{lstlisting}
+$ curl -I http://localhost:8080/employees/7
+HTTP/1.1 404 
+Content-Type: application/json;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 30 Dec 2020 15:55:49 GMT
+\end{lstlisting}
+Provjerimo log-ove application mikroservisa.
+\begin{lstlisting}
+$ kubectl logs rest-app-deploy-95cbc5c8-6kzn6 --tail 1
+2020-12-30 15:55:49.046  WARN 1 --- [nio-8080-exec-6] .m.m.a.ExceptionHandlerExceptionResolver : Resolved [com.app.rest.exception.NotFoundException: Employee with id: 7 doesn't exist.]
+\end{lstlisting}
+Dakle consumer dobiva informacije od application mikroservisa. Mikroservisi su deployani i omogućena je komunikacija direktno između njih. Pri promjeni implementacije izvornog koda mikroservisa dovoljno je pokrenuti komande s počekta poglavlja i deployment će se automatski ažurirati.
+\end{document}

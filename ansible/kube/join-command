@@ -1,1 +1,1 @@
-kubeadm join 192.168.5.10:6443 --token 8bmlaj.jti2150z2flqmeet     --discovery-token-ca-cert-hash sha256:b821d5f8f77906f785d7d1805f3873db330ce3176db0be859c8900f3e1a12b8e 
+kubeadm join 192.168.5.10:6443 --token zou018.hr47t66hdef89cvz     --discovery-token-ca-cert-hash sha256:2f513eea462030eea2f57c26113a55409447edcecead4b76c57f586afe16e103 

@@ -1,0 +1,19 @@
+%wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+% Ansible
+%wwwwwwwwwwwwwwwww
+
+\documentclass[../diplomskiRad.tex]{subfiles}
+
+\begin{document}
+
+\chapter{Zaključak}
+Prednosti automatizacije infrastrukture, mreže ili procesa deployment-a su nebrojene kao što i možemo vidjeti iz prethodnih poglavlja. Ako krenemo od infrastrukture i software-skog načina definisanja infrastrukture i mreže, umanjenje ljudske greške se ogleda u velikom procentu. Reproduciranje okruženja postaje izvodljivo u jednoj komandi što znatno ubrzava vrijeme potrebno da se kreira novo okruženje ili da se izvrši oporavka od katastrofe. Kao posljedica istog koda infrastruture implicitno konzistentnost okruženja postaje sto postotna. Izmjene nad infrastrukturom postaju jednostavne jer sve što je potrebno izmijeniti vrijednost neke varijable ili dodati par novih linija koda.
+\\\\
+Automatizacija procesa deployment-a aplikacija omogućava programerima da češće unaprijeđuju aplikaciju. Menadžment aplikacije u kubernetes cluster-u ima niz prednosti nad standardnim deployment-om aplikacije na virtualne ili bare metal mašine. Brzina pokretanja/zaustavljanja aplikacije je unaprijeđena mnogostruko. Korištenjem kontejnera, kubernetes cluster-a i kreiranjem aplikacije imajući na umu mikroservisnu arhitekturu, omogućava horizontalno skaliranje po potrebi bez da krajnji korisnici osjete bilo kakve turbulencije ili nedostpunost servisa. Skaliranje pod-ova u kubernetes cluster-u omogućeno je sa par klikova ili komandom sa terminala. Pored horizontalnog skaliranja omogućeno je vršenje unaprijeđenja aplikacije na više načina bez da krajnji korisnici izgube pristup servisima.
+\\\\
+Možemo zaključiti da je automatizacija budućnost razvoja software-a jer da bi bili u toku sa  tehnologijama koje se razvijaju svakim danom, nemoguće bi bilo održati tempo sa istim bez korištenja potrebnih alata za automatizaciju. U ovom radu nije obrađeno korištenje alata za izradu kompleksnih DevOps pipeline-a pomoću alata kao što su GitLab ili Jenkins. To bi bio sljedeći korak. Korištenje verzije kontrole također nije obrađeno jer se oslanja na implementacije specifičnih proizvođača i svaka se razlikuje od druge ali je potrebno napomenuti da predstavljaju neizostavan dio automatizacije deploymenta i infrastrukture.
+\\\\
+Znanje potrebno da bi ovladali procesom automatizacije se prostire između Development-a i Operations-a. Dakle potrebno je poznavati i jedno i drugo da bi mogli efektivno i na elegantan način automatizirati procese.
+\\\\
+Ansible se pokazao kao veoma dobar alat za provizioniranje okruženja, za šta se i najčešće koristi. Pri procesu razvoja software-a i automatizacije deployment-a također je moguće inkorporirati Ansible i iskoristiti dobre strane alata. Međutim u tom kontekstu se ne koristi često i postoje drugi alati koji preuzimaju ulogu u tom smislu.
+\end{document}
