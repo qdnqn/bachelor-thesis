@@ -1,0 +1,55 @@
+\begin{samepage}
+% \pagestyle{empty}
+\untzwatermark
+
+\setlength{\parindent}{0pt}
+\textbf{\NazivUniverziteta\\
+\NazivFakulteta\\
+}
+
+\vspace{5mm}
+
+Broj: \BrojOdluke\\
+Tuzla, \DatumOdluke. godine
+
+\vspace{3cm}
+
+\begin{center}
+\large\textbf{\Student}
+\end{center}
+
+\vspace{7mm}
+
+Na osnovu Vašeg zahtjeva i izdate teme na predmetu "\textit{\NazivPredmeta}" izdaje Vam se slijedeći pismeni završni zadatak:
+
+\vspace{7mm}
+
+\begin{center}
+   \large\textbf{"\NazivRada"}
+\end{center}
+
+\vspace{1cm}
+
+Na osnovu člana 192. Statuta Univerziteta u Tuzli, završni rad možete braniti kada ispunite sve uslove predviđene Nastavnim planom i programom prvog ciklusa studija, Statutom i drugim opštim aktima Univerziteta.
+
+
+
+
+\vfill
+\begin{minipage}{0.55\textwidth}
+$~$
+\end{minipage}
+\begin{minipage}{0.44\textwidth}
+\centering
+\vfill
+\small{Dekan}
+
+\vspace{5mm}
+
+\scriptsize{...............................................................................}\normalsize
+
+\small{\Dekan} 
+\end{minipage}
+
+% \pagestyle{empty}
+\end{samepage}

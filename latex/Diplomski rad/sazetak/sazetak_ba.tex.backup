@@ -1,0 +1,20 @@
+\begin{samepage}
+ \chapter*{\Large{Sažetak}}$~$
+
+Sažetak mora dati prikaz istraživanja provedenih u radu. Sažetak ne smije biti duži od jedne stranice i mora sadržavati ključne elemente:
+
+\begin{enumerate}[i)]
+ \item Cilj istraživanja 
+ \item Korištene metodologije 
+ \item Glavne spoznaje i zaključak
+\end{enumerate}
+
+Sažetak ne smije imati vizualne stavke(slike, grafike itd.), referentne brojeve korištene literature kao niti citate.
+sažetak mora biti jedinstven prikaz rada. Sažetak počinje na novoj stranici.
+
+\vspace{10mm}
+\setlength{\parindent}{0pt}
+\textbf{Ključne riječi:} Prva, Druga and Treća.
+\end{samepage}
+\addcontentsline{toc}{chapter}{Sažetak}
+\clearpage

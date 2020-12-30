@@ -1,0 +1,25 @@
+---
+- name: Conditional execution
+  hosts: all
+  become: yes
+  gather_facts: true
+  vars:
+    supported_os_yum:
+      - RedHat
+      - Fedora
+    supported_os_apt:
+      - Ubuntu
+
+  tasks:
+    - name: Install htop using yum
+      yum:
+        name: htop
+        state: present
+      when: ansible_facts['distribution'] in supported_os_yum
+
+    - name: Install htop using yum
+      apt:
+        name: htop
+        state: present
+      when: ansible_facts['distribution'] in supported_os_apt
+

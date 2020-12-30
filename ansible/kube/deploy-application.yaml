@@ -1,0 +1,46 @@
+---
+- hosts: localhost
+  tasks:
+  - name: Deploy application to the cluster
+    k8s:
+      api_version: v1
+      namespace: default
+      definition:
+        kind: Deployment
+        metadata:
+          labels:
+            app: rest-app
+          name: rest-app-deploy
+        spec:
+          replicas: 1
+          selector:
+            matchLabels:
+              app: rest-app
+          template:
+            metadata:
+              labels:
+                app: rest-app
+            spec:
+              containers:
+                - name: rest-app
+                  image: rest:1.0.0
+                  ports:
+                    - containerPort: 8080
+                      protocol: TCP
+  - name: Deploy service to the cluster
+    k8s:
+      api_version: v1
+      namespace: default
+      definition:
+        kind: Service
+        metadata:
+          labels:
+            app: rest-app
+          name: rest-app-svc
+        spec:
+          ports:
+          - port: 80
+            targetPort: 8080
+          selector:
+            app: rest-app
+          type: ClusterIP

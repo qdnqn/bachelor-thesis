@@ -1,0 +1,9 @@
+- name: Initialize the Kubernetes cluster using kubeadm
+  command: kubeadm init --apiserver-advertise-address="{{ node_ip }}" --apiserver-cert-extra-sans="{{ node_ip }}"  --node-name k8s-master --pod-network-cidr={{ pod_network_cidr }}
+
+- name: Setup kubeconfig for vagrant user
+  command: "{{ item }}"
+  with_items:
+   - mkdir -p /home/vagrant/.kube
+   - cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
+   - chown vagrant:vagrant /home/vagrant/.kube/config

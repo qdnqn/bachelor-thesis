@@ -1,0 +1,3 @@
+ansible_host: 192.168.5.12
+ansible_ssh_private_key_file: ~/personal/bachelor-thesis/vagrant/kube/.vagrant/machines/node-2/virtualbox/private_key
+node_ip: 192.168.5.12

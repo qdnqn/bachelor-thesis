@@ -1,0 +1,52 @@
+\appendix
+\addcontentsline{toc}{chapter}{Appendix}
+
+% \addcontentsline{toc}{chapter}{Abstract}
+\chapter{Hemijske reakcije i strukturalni dijagrami}
+
+\begin{figure}[H]
+\centering
+\schemestart
+ \chemfig{H-O-H}
+\schemestop
+\caption{$H_2 O$}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+ \chemfig{C(-[2]H)(-[4]H)(-[6]H)-C(-[2]H)(-[6]H)-H}
+\end{figure}
+% 
+
+
+
+
+
+
+
+
+
+
+
+
+
+% \begin{center}
+% \schemestart
+%   \chemfig{-[:30](-[2])-[:-30]OH}
+%    \arrow
+%   \chemfig{-[:30](-[2])=^[:-30]O}
+% \schemestop
+% \end{center}
+
+
+
+
+% \begin{center}\small\setatomsep{1.5em}
+%  \schemestart
+%  \chemfig{*6(=-=(-(=[2]O)-[::-60]O-[0]O-[::30](=[2]O)-[::-60]*6(=-=-=-))-=-)}
+%   \arrow{->[$\Delta$]}
+%   2 \chemfig{*6(=-=(-(=[2]O)-[::-60]\lewis{0.,O})-=-)}
+%   \arrow
+%   2 \chemfig{*6(=-=(-[,.15,,,draw=none]\lewis{0.,})-=-)}\+\ch{2 CO2 ^}
+%  \schemestop
+% \end{center}

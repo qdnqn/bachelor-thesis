@@ -1,0 +1,10 @@
+---
+- hosts: 127.0.0.1
+  vars:
+    ansible_host: 127.0.0.1
+
+  tasks:
+    - name: Jinja2 Example
+      template:
+        src: templates/example.j2 
+        dest: /tmp/parsed.txt

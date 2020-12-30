@@ -1,0 +1,7 @@
+- name: Install calico tigera-operator
+  become: false
+  command: kubectl create -f https://docs.projectcalico.org/manifests/tigera-operator.yaml
+
+- name: Install calico custom resources
+  become: false
+  command: kubectl create -f https://docs.projectcalico.org/manifests/custom-resources.yaml

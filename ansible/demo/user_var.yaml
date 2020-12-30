@@ -1,0 +1,12 @@
+---
+- name: Add new user playbook
+  hosts: all
+  become: yes
+  vars: 
+    username: qdnqn
+  tasks:
+    - name: Add new user task
+      user:
+        name: "{{ username }}"
+        uid: 4000
+        state: present

@@ -1,0 +1,10 @@
+---
+- name: Add new user playbook
+  hosts: all
+  become: yes
+  tasks:
+    - name: Add new user task
+      user:
+        name: qdnqn
+        uid: 4000
+        state: present

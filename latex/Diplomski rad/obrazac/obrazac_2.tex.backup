@@ -1,0 +1,99 @@
+\newpage
+\pagestyle{empty}
+\begin{samepage}
+\pagestyle{empty}
+\untzwatermark
+
+\setlength{\parindent}{0pt}
+\MakeUppercase\NazivUniverziteta \hfill (Obrazac 2)\\
+\MakeUppercase\NazivFakulteta\\
+\MakeUppercase\Odsjek\\
+\MakeUppercase\StudijskiProgram\\
+
+\vspace{3cm}
+
+\begin{center}
+\large\textbf{SAGLASNOST MENTORA}
+\end{center}
+
+\vspace{7mm}
+
+Mentor/ica \scriptsize{.........................................................................................................................................} \normalsize je pregledao/la završni rad studenta/ice\\
+
+\vspace{3mm}
+
+\scriptsize{...................................................................................................} \normalsize, iz nastavnog predmeta
+\vspace{7mm}
+
+
+Ime i prezime studenta:\hfill \scriptsize{........................................................................................................................................} \normalsize\\
+
+Nastavni predmet u okviru kojeg\\ se planira izrada završnog rada:\hfill\scriptsize{........................................................................................................................................} \normalsize\\
+
+Saglasnost nastavnika - mentora\\ završnog rada:\hfill\scriptsize{........................................................................................................................................} \normalsize\\
+
+
+Saglasnost Prodekana za nastavu:\hfill\scriptsize{........................................................................................................................................} \normalsize\\
+
+
+
+\vfill
+\begin{minipage}{0.58\textwidth}
+$~$
+\end{minipage}
+\begin{minipage}{0.41\textwidth}
+\centering
+\vfill
+\small{Ime i prezime studenta}
+
+\vspace{5mm}
+
+\scriptsize{...............................................................................}\normalsize
+\end{minipage}
+
+\vspace{20mm}
+
+
+\begin{minipage}{0.42\textwidth}
+\centering
+\vfill
+\small{Datum prijave teme završnog rada }
+
+\vspace{5mm}
+
+\scriptsize{...............................................................................}\normalsize
+\end{minipage}
+\begin{minipage}{0.16\textwidth}
+$~$ 
+\end{minipage}
+\begin{minipage}{0.41\textwidth}
+\centering
+\vfill
+\small{Viši referent za studentska pitanja}
+
+\vspace{5mm}
+
+\scriptsize{...............................................................................}\normalsize
+\end{minipage}
+
+% 
+% Ime i prezime studenta
+%                                                                                                
+%                                                                                                          ________________________
+% 
+% 
+% 
+% Datum prijave teme završnog rada 			
+
+
+
+
+
+
+
+
+
+
+
+
+\end{samepage}

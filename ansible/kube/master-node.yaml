@@ -1,0 +1,51 @@
+---
+- hosts: master
+  become: true
+  tasks:
+  - name: Install packages that allow apt to be used over HTTPS
+    include_tasks: tasks/apt-https.yaml
+
+  - name: Install Docker
+    include_tasks: tasks/apt-docker.yaml
+
+  - name: Add vagrant user to docker group
+    user:
+      name: vagrant
+      group: docker
+
+  - name: Disable swap
+    include_tasks: tasks/disable-swap.yaml
+
+  - name: Install Kubernetes tools
+    include_tasks: tasks/apt-kubernetes.yaml
+
+  - name: Touch a kubelet
+    include_tasks: tasks/update-kubelet.yaml
+      
+  - name: Initialize the Kubernetes cluster using kubeadm
+    include_tasks: tasks/initialize-cluster.yaml
+
+  - name: Install calico tigera-operator
+    include_tasks: tasks/install-calico.yaml
+
+  - name: Generate join command
+    command: kubeadm token create --print-join-command
+    register: join_command
+
+  - name: Copy join command to local file (In ansible playbook directory)
+    local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"
+    become: false
+
+  - name: Get kubeconfig for vagrant user
+    command: "{{ item }}"
+    with_items:
+     - cat /home/vagrant/.kube/config
+    register: kube_config
+
+  - name: Copy kubeconfig to .kube/config
+    local_action: copy content="{{ kube_config.results[0].stdout }}" dest="~/.kube/config"
+    become: false
+
+  handlers:
+    - name: docker status
+      include_tasks: handlers/restart-docker.yaml

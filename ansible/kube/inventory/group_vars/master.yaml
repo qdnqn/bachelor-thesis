@@ -1,0 +1,2 @@
+ ansible_user: vagrant
+ node_ip: 192.168.5.10

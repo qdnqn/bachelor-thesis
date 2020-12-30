@@ -1,0 +1,36 @@
+---
+- hosts: workers
+  become: true
+  tasks:
+  - name: Install packages that allow apt to be used over HTTPS
+    include_tasks: tasks/apt-https.yaml
+
+  - name: Install Docker
+    include_tasks: tasks/apt-docker.yaml
+
+  - name: Allow remote connection to the docker daemon
+    include_tasks: tasks/expose-daemon.yaml
+
+  - name: Add vagrant user to docker group
+    user:
+      name: vagrant
+      group: docker
+
+  - name: Disable swap
+    include_tasks: tasks/disable-swap.yaml
+
+  - name: Install Kubernetes tools
+    include_tasks: tasks/apt-kubernetes.yaml
+
+  - name: Touch a kubelet
+    include_tasks: tasks/update-kubelet.yaml
+      
+  - name: Copy the join command to server location
+    copy: src=join-command dest=/tmp/join-command.sh mode=0777
+
+  - name: Join the node to cluster
+    command: sh /tmp/join-command.sh
+
+  handlers:
+    - name: docker status
+      include_tasks: handlers/restart-docker.yaml

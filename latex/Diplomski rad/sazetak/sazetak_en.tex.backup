@@ -1,0 +1,17 @@
+\selectlanguage{english}
+\begin{samepage}
+ \chapter*{Abstract}
+The Abstract shall provide a description of the investigation undertaken in the thesis. The Abstract shall not be longer than one page, and it must contain the following three critical elements:
+\begin{enumerate}
+ \item A statement of purpose of the project or its objective
+ \item A statement of the methodology employed to conduct the investigation
+ \item A statement of the major findings and conclusions
+\end{enumerate}
+The Abstract shall not feature visual items, reference numbers, other types of documentation, and direct quotations.
+The Abstract must be a unique representation of the thesis; that is, it must not incorporate large amounts of verbatim material from the main text, especially the Introduction in the Body of the document. Begin the Abstract on a new page.
+
+\vspace{10mm}
+\textbf{Keywords:} First, Second and Third
+\end{samepage}
+\addcontentsline{toc}{chapter}{Abstract}
+\selectlanguage{croatian}

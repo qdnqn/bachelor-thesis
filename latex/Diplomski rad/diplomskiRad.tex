@@ -1,0 +1,167 @@
+\documentclass[a4paper,12pt]{report}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\setcounter{secnumdepth}{5}
+\setcounter{tocdepth}{5}
+
+\usepackage[english,croatian]{babel}
+\usepackage{lmodern}
+\usepackage{fancyhdr}
+\usepackage{courier}
+\usepackage{forest}
+
+% grafika
+\usepackage{graphicx}
+% formatiranje math
+\usepackage{amssymb,amsmath}
+\usepackage{verbatim}
+\usepackage{color}
+% enumeracija liste (itemize,enumerate)
+\usepackage{enumerate}
+% pozicioniranje figura
+\usepackage{float}
+\usepackage{subfig}
+% tabele
+\usepackage{multirow}
+% tikz 
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+% elektricne shema
+\usepackage{circuitikz}
+% grafici
+\usepackage{pgfplots}
+% pakiranje koda
+\usepackage[final]{listings}
+% formatiranje margina
+\usepackage[left=30mm,top=25mm,right=25mm,bottom=30mm]{geometry}
+% smooth fonts
+\usepackage{ae,aecompl} 
+% watermark package
+\usepackage{watermark}
+% times new roman font
+\usepackage{times}
+
+\usepackage{nomencl}
+
+% hemijske reaakcije
+\usepackage{mathptmx} 
+\usepackage{./chemfig/chemfig}
+\usepackage[version=3]{mhchem} 
+
+
+\usepackage{hyperref}
+\hypersetup{%
+    pdfborder = {0 0 0}
+}
+
+
+% pseudo algoritam
+\usepackage{algorithm2e}
+
+% \makeindex
+\makenomenclature
+
+%WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+%-------------------------------------------------------------------------------------------------------------------
+% podaci o studentu, mentoru i diplomskom radu potrebni za naslovnicu
+\newcommand{\Student}{Adnan Selimović}
+\newcommand{\StudentIndeks}{Stud}
+\newcommand{\Mentor}{Prof.$~$Dr. Suad Kasapović}
+\newcommand{\NazivPredmeta}{Projektovanje telekomunikacionih mreža}
+\newcommand{\NazivRada}{Automatizacija mreže i infrastrukture}
+\newcommand{\MjestoGodina}{Tuzla, Septembar 2020. godine}
+\newcommand{\NazivFakulteta}{Fakultet elektrotehnike}
+\newcommand{\Odsjek}{Telekoumnikacije}
+\newcommand{\StudijskiProgram}{Elektrotehnika i računarstvo}
+\newcommand{\NazivUniverziteta}{Univerzitet u Tuzli}
+\newcommand{\DatumOdluke}{26.06.2012}
+\newcommand{\BrojOdluke}{01/1-1-11/11}
+\newcommand{\Dekan}{Dr.$~$Sc. Nerdina Mehinović, vanr. prof.}
+
+\input{config}
+
+\usepackage{subfiles} % Best loaded last in the preamble
+
+\begin{document}
+
+%WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+%-------------------------------------------------------------------------------------------------------------------
+% ukljuci naslovnicu diplomskog rada >> naslovnica.tex <<
+\input{naslovnica}
+
+%WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+%-------------------------------------------------------------------------------------------------------------------
+% ukljuci odluku Dekana >> odluka.tex <<
+%\input{odluka} 
+
+\pagestyle{fancy}
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}}
+\fancyhf{}
+\fancyhead[RO,R]{\small \leftmark}
+\fancyhead[LO,L]{\small \rightmark}
+\fancyfoot[C]{\thepage}
+
+\pagenumbering{roman}
+
+% ukljuci sažetak >> sazetak/sazetak_ba.tex <<
+%\input{sazetak/sazetak_ba} 
+
+% ukljuci sažetak >> sazetak/sazetak_en.tex <<
+%\input{sazetak/sazetak_en} 
+%WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+%-------------------------------------------------------------------------------------------------------------------
+% generisanje sadrzaja
+\tableofcontents
+
+% generisanje liste slika
+\listoffigures
+
+
+% generisanje liste tabela
+\listoftables
+
+% generisi listu skracenica 
+% u komandnom prozoru unutar direktorija sa diplomski_rad.tex fileom izvrsiti sljedecu komandu
+% makeindex diplomski_rad.nlo -s nomencl.ist -o diplomski_rad.nls
+\renewcommand{\nomname}{Lista skraćenica}
+
+% sirina polja za skrećeince (po potrebi promjeniti)
+\printnomenclature[20mm]
+
+
+\newpage
+%WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+%-------------------------------------------------------------------------------------------------------------------
+ \pagenumbering{arabic}
+% ukljuci prvo poglavlje  >> prvo_poglavlje.tex <<
+\subfile{poglavlja/uvod}
+\subfile{poglavlja/docker_kubernetes}
+\subfile{poglavlja/ansible}
+\subfile{poglavlja/automatizacija}
+% \input{poglavlja/automat_mreze_infrastrukt}
+% \input{poglavlja/automat_prod}
+
+% ukljuci zakljucak  >> zakljucak.tex <<
+%\input{zakljucak}
+
+
+%WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+% generisanje bibliografije
+%\input{reference}
+
+\appendix
+\addcontentsline{toc}{chapter}{Dodatak}
+% ukljuci >> dodatak/dodataka_a.tex <<
+%\input{dodatak/dodatak_a}
+% ukljuci >> dodatak/dodataka_b.tex <<
+%\input{dodatak/dodatak_b}
+% ukljuci >> dodatak/dodataka_c.tex <<
+%\input{dodatak/dodatak_c}
+
+%\input{instalacija} 
+%
+
+
+\end{document}
+

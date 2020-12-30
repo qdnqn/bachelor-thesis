@@ -1,0 +1,73 @@
+\documentclass[a4paper,12pt]{report}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english,croatian]{babel}
+\usepackage{lmodern}
+\usepackage{fancyhdr}
+% grafika
+\usepackage{graphicx}
+% formatiranje math
+\usepackage{amssymb,amsmath}
+\usepackage{verbatim}
+\usepackage{color}
+% enumeracija liste (itemize,enumerate)
+\usepackage{enumerate}
+% pozicioniranje figura
+\usepackage{float}
+\usepackage{subfig}
+% tabele
+\usepackage{multirow}
+% tikz 
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+% elektricne shema
+\usepackage{circuitikz}
+% grafici
+\usepackage{pgfplots}
+% pakiranje koda
+\usepackage{listings}
+% formatiranje margina
+\usepackage[left=25mm,top=25mm,right=25mm,bottom=25mm]{geometry}
+% smooth fonts
+\usepackage{ae,aecompl} 
+% watermark package
+\usepackage{watermark}
+% times new roman font
+\usepackage{times}
+
+
+
+%WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+%-------------------------------------------------------------------------------------------------------------------
+% podaci o studentu, mentoru i diplomskom radu potrebni za naslovnicu
+\newcommand{\Student}{Student Studentić}
+\newcommand{\StudentIndeks}{Stud}
+\newcommand{\Mentor}{Prof.$~$Dr. Profesor Profesorić}
+\newcommand{\NazivPredmeta}{Naziv predmeta}
+\newcommand{\NazivRada}{Naziv završnog rada}
+\newcommand{\MjestoGodina}{Tuzla, Mjesec 2012. godine}
+\newcommand{\NazivFakulteta}{FAKULTET}
+\newcommand{\Odsjek}{ODSJEK}
+\newcommand{\StudijskiProgram}{Studijski program}
+\newcommand{\NazivUniverziteta}{Univerzitet u Tuzli}
+\newcommand{\DatumOdluke}{26.06.2012}
+\newcommand{\BrojOdluke}{01/1-1-11/11}
+\newcommand{\Dekan}{Dr.$~$Sc. Dekan Fakulteta, vanr. prof.}
+
+
+
+
+\begin{document}
+
+%WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+%-------------------------------------------------------------------------------------------------------------------
+% ukljuci konfiguracioni file  >> config.tex <<
+\input{config_obrazac}
+
+\input{obrazac_1} 
+
+\input{obrazac_2} 
+
+\input{obrazac_3} 
+\end{document}
+

@@ -1,0 +1,39 @@
+% 
+% \addcontentsline{toc}{chapter}{Appendix}
+% \thispagestyle{empty}
+
+% \usepackage{program}
+% \addcontentsline{toc}{chapter}{Abstract}
+\chapter{Pseudo algoritam}
+
+ 
+\begin{algorithm}[H]
+\SetLine
+\KwIn{Set of tasks and processors}
+\KwOut{Mapping of tasks to processors}
+
+\ForEach{Task $i$}{
+\ForEach{Processor $j$}{
+Calculate EW($i$,$j$)\;
+\If{EW($i$,$j$) $\le$ EW($a$,$b$)}{
+$a$ = $i$\;
+$b$ = $j$\;
+}
+}
+}
+\While{Unscheduled tasks remaining}{
+\ForEach{Processor $j$}{
+Calculate FT($a$,$j$)\;
+\If{FT($a$,$j$) $\le$ FT($a$,$c$)}{
+$c$ = $j$\; 
+}
+}
+Schedule(Task $a$ on Processor $c$) \;
+}
+\caption{The Min-Error (MinE) algorithm with an earliest first heuristic}
+\label{alg:mine}
+\end{algorithm}
+
+
+
+

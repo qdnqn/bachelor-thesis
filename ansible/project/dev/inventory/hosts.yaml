@@ -1,9 +1,0 @@
-all:
-  hosts:
-    u1:
-    u2:
-  children:
-    vagrant:
-      hosts:
-        u1:
-        u2:

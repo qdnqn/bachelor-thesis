@@ -1,0 +1,10 @@
+\begin{thenomenclature} 
+
+ \nomgroup{A}
+
+  \item [{FE}]\begingroup Fakultet elektrotehnike\nomeqref {1.1}
+		\nompageref{2}
+  \item [{UNTZ}]\begingroup Univerzitet u Tuzli\nomeqref {1.1}
+		\nompageref{2}
+
+\end{thenomenclature}

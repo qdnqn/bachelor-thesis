@@ -1,0 +1,182 @@
+%wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+% Automatizacija mreže i infrastrukture
+%wwwwwwwwwwwwwwwww
+
+\documentclass[../diplomskiRad.tex]{subfiles}
+\setlistingyaml
+
+\begin{document}
+
+\chapter{Automatizacija mreže i infrastrukture}
+U sljedećem dijelu obrađena je procedura automatskog procesa stavljanja u rad kubernetes cluster-a korištenjem Ansible alata za automatizaciju. Zbog troškova i ograničenja sa opremom, te lakše reprodukcije IaC-a definisanog u radu koristit će se Vagrant za simulaciju multi-host okruženja.
+\section{Postavljanje Vagrant okruženja}
+Za postavljanje okruženja korišten je sljedeći Vagrantfile.
+\begin{lstlisting}
+IMAGE_NAME = "hashicorp/bionic64"
+N = 2
+
+Vagrant.configure("2") do |config|
+    config.vm.provider "virtualbox" do |v|
+        v.memory = 2048
+        v.cpus = 2
+    end
+      
+    config.vm.define "k8s-master" do |master|
+        master.vm.box = IMAGE_NAME
+        master.vm.network "private_network", ip: "192.168.5.10"
+        master.vm.hostname = "k8s-master"
+    end
+
+    (1..N).each do |i|
+        config.vm.define "node-#{i}" do |node|
+            node.vm.box = IMAGE_NAME
+            node.vm.network "private_network", ip: "192.168.5.#{i + 10}"
+            node.vm.hostname = "node-#{i}"
+        end
+    end
+end
+\end{lstlisting}
+U ovom primjer definisani su resursi za svaku virtualnu mašinu: 2048MB RAM memorije i 2 virtualna CPU-a. Kako se kubernetes cluster sastoji od različitih node-ova potrebno nam je više različitih okruženja.
+\newpage 
+Definisane su tri različite mašine (Promjenom vrijednosti N=2 moguće je vršiti izmjenu broja worker node-ova):
+\begin{itemize}
+    \item k8s-master(192.168.5.10)
+    \item node-1(192.168.5.11)
+    \item node-2(192.168.5.12)
+\end{itemize}
+Virtualna mašina k8s-master predstavlja master node, a node-1 i node-2 predstavljaju worker nodes. \\\\
+Izvršavanjem sljedeće komande pokrenut će se navedene virtualne mašine.
+\begin{lstlisting}
+vagrant up
+\end{lstlisting}
+\section{Provizioniranje korištenjem Ansible-a}
+Za automatizaciju instalacije kubernetes cluster-a definisana su dva playbook-a.
+Playbook master-node.yaml definisan je za provizioniranje k8s-master, a worker-node.yaml za provizioniranje node-1 i node-2.
+\subsection{Definicija inventory file-a}
+Na osnovu Vagrantfile i konfiguracije koja je korištena, definisan je inventory za korištenje pri izvršenju Ansible playbook-a. \\\\
+File hosts.yaml dat je ispod.
+\begin{lstlisting}
+all:
+  hosts:
+    k8s-master:
+    node-1:
+    node-2:
+  children:
+    master:
+      hosts:
+        k8s-master:
+    workers:
+      hosts:
+        node-1:
+        node-2:
+\end{lstlisting}
+Definisane su dvije grupe master i workers da bi mogli lakše ciljati određenu vrstu node-ova pri izvršenju playbook-a.
+\subsection{Provizioniranje k8s-master node-a}
+Definicija playbook-a master-node.yaml data je na sljedećoj stranici. 
+\newpage
+\begin{lstlisting}
+- hosts: master
+  become: true
+  tasks:
+  - name: Install packages that allow apt to be used over HTTPS
+    include_tasks: tasks/apt-https.yaml
+
+  - name: Install Docker
+    include_tasks: tasks/apt-docker.yaml
+
+  - name: Add vagrant user to docker group
+    user:
+      name: vagrant
+      group: docker
+
+  - name: Disable swap
+    include_tasks: tasks/disable-swap.yaml
+
+  - name: Install Kubernetes tools
+    include_tasks: tasks/apt-kubernetes.yaml
+
+  - name: Touch a kubelet
+    include_tasks: tasks/update-kubelet.yaml
+      
+  - name: Initialize the Kubernetes cluster using kubeadm
+    include_tasks: tasks/initialize-cluster.yaml
+
+  - name: Install calico tigera-operator
+    include_tasks: tasks/install-calico.yaml
+
+  - name: Generate join command
+    command: kubeadm token create --print-join-command
+    register: join_command
+
+  - name: Copy join command to local file (In ansible playbook directory)
+    local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"
+    become: false
+
+  - name: Get kubeconfig for vagrant user
+    command: "{{ item }}"
+    with_items:
+     - cat /home/vagrant/.kube/config
+    register: kube_config
+
+  - name: Copy kubeconfig to local file (In ansible playbook directory)
+    local_action: copy content="{{ kube_config.results[0].stdout }}" dest="./config"
+    become: false
+
+  handlers:
+    - name: docker status
+      include_tasks: handlers/restart-docker.yaml
+\end{lstlisting}
+\newpage
+Nakon pokretanja sljedeće komande Ansible bi trebao instalirati sve potrebne alate i konfigurisati k8s-master kao validan master node.
+\begin{lstlisting}
+ansible-playbook -i inventory master-node.yaml
+\end{lstlisting}
+Iz navedenog playbook-a možemo zaključiti da je potrebno izvršiti niz task-ova da bi uspješno postavili master node. Task-ovi su include-ani unutar playbook jer većinu task-ova možemo iskoristiti za postavljanje worker node-a. Većina task-ova je samo-objašnjavajuća i uključuje instalaciju potrebnih alata kao što su docker, kubectl, kubelet, itd... Task-ovi koje ćemo detaljnije objasniti su:
+\begin{itemize}
+    \item Kubeadm (tasks/initialize-cluster.yaml)
+    \item Calico (tasks/install-calico.yaml)
+    \item Kubelet (update-kubelet.yaml)
+    \item Generisanje join komande
+\end{itemize}
+\subsubsection{Kubeadm}
+Za inicijalizaciju cluster-a koristimo \textbf{kubeadm}. Kubeadm je alat koji služi za postavljanje minimalnog održivog kubernetes cluster-a koji je u skladu sa najboljom praksom. Kubeadm kao argumente zahtjeva ip adresu na kojoj će biti pokrenut API server za komunikaciju u kontrolnoj ravni. Pored toga zahtjeva i \textbf{--pod-network-cidr} kao pool IP adresa koje će se dodijeljivati pod-ovima unutar cluster-a. Pri inicijalizaciji cluster-a definisat će se \textbf{config} file koji je moguće koristiti za izvršavanje kubectl komandi. Drugi dio task-a zaslužen je da smjesti config file u potreban direktorij.
+\\\\
+Task \textbf{tasks/initialize-cluster.yaml} dat je ispod. Korištena varijabla \textbf{node\_ip=192.168.5.10} je definisana unutar grupe master. Također korištena je varijabla i \textbf{pod\_network\_cidr=192.168.0.0/16}.
+\begin{lstlisting}
+- name: Initialize the Kubernetes cluster using kubeadm
+  command: kubeadm init --apiserver-advertise-address="{{ node_ip }}" --apiserver-cert-extra-sans="{{ node_ip }}"  --node-name k8s-master --pod-network-cidr={{ pod_network_cidr }}
+
+- name: Setup kubeconfig for vagrant user
+  command: "{{ item }}"
+  with_items:
+   - mkdir -p /home/vagrant/.kube
+   - cp -i /etc/kubernetes/admin.conf /home/vagrant/.kube/config
+   - chown vagrant:vagrant /home/vagrant/.kube/config
+\end{lstlisting}
+\subsubsection{Calico}
+Calico predstavlja jednu od više implementacija kubernetes networking rješenja. Konfiguracijom calico network deployment-a možemo podesiti čitav spektar načina rada unutar kubernetes cluster-a. Calico radi na layer-u 3. Može raditi sa različitim CNI i IPAM driver-ima, raznim underlay mrežama, u overlay ili non-overlay modu, sa i bez BGP protokola. Također omogućava nam korištenje NetworkPolicy u kubernetes cluster-u.
+\newpage
+Task \textbf{tasks/install-calico.yaml} dat je ispod. 
+\begin{lstlisting}
+- name: Install calico tigera-operator
+  become: false
+  command: kubectl create -f https://docs.projectcalico.org/manifests/tigera-operator.yaml
+
+- name: Install calico custom resources
+  become: false
+  command: kubectl create -f https://docs.projectcalico.org/manifests/custom-resources.yaml
+\end{lstlisting}
+Ova dva task-a zadužena su za instalaciju tigera-operatora i calico custom resources-a. Tigera-operator služi za lakši menadžment calico instalacije i njegove nadogradnje.
+\subsubsection{Kubelet}
+Kubelet je primarni agent koji je instaliran i pokrenu na svakom node-u. Omogućava registraciju node-a na api-server. \\\\
+Task \textbf{tasks/install-calico.yaml} dat je ispod. 
+\begin{lstlisting}
+- name: Install calico tigera-operator
+  become: false
+  command: kubectl create -f https://docs.projectcalico.org/manifests/tigera-operator.yaml
+
+- name: Install calico custom resources
+  become: false
+  command: kubectl create -f https://docs.projectcalico.org/manifests/custom-resources.yaml
+\end{lstlisting} 
+\end{document}

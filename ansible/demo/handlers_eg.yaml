@@ -1,0 +1,25 @@
+---
+- name: Set hostname of managed machine
+  hosts: all
+  become: yes
+  gather_facts: true
+  tasks:
+    - name: Set hostname
+      hostname:
+        name: u1
+      notify: Display hostname
+      when: ansible_facts['hostname'] == "u1" 
+
+  handlers:
+    - name: Display hostname
+      become: true
+      command:
+        cmd: cat /etc/hostname 
+      register: hostname
+      notify: debug
+    
+    - name: debug
+      debug:
+        var: hostname
+
+  

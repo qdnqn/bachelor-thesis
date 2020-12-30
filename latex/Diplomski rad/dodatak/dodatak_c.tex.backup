@@ -1,0 +1,44 @@
+% \appendix
+
+
+% \addcontentsline{toc}{chapter}{Abstract}
+\chapter{Kreiranje funkcionalnih dijagrama}
+
+\setlistingmatlab
+\begin{lstlisting}
+clear all
+close all
+clc
+
+Ac=10;
+f_c=500;
+t=0:0.0001:0.4;
+x=0.3*sin(10*pi*t)+0.2*sin(45*pi*t)+0.4*sin(20*pi*t);
+
+mu=0.5;
+x_c=Ac*(1+mu*x).*cos(2*pi*f_c*t);
+
+fid=fopen('AMMDNF.txt','w');
+fprintf(fid,'t \t\t\t  x1  \t\t\t  x2  \t\t\t  xm  \n');
+for n=1:3:2000
+    fprintf(fid,'%f \t\t %f  \t\t %f  \t\t %f \n',t(n)
+    ,Ac*(1+mu*x(n)),-Ac*(1+mu*x(n)),x_c(n));
+end
+fclose(fid);
+ 
+\end{lstlisting}
+
+
+
+\begin{figure}[H] 
+	\centering
+	\begin{tikzpicture}[scale=0.8]
+			\begin{axis}[width=18cm,height=8cm,xmin=0,xmax=0.2,grid=major,xlabel=$t(s)$,ylabel= $x_{mod}(t)$]
+				\addplot[color=red,line width=1pt] table[x=t,y=x1] {slike/AMMDNF.txt};
+				\addplot[color=white,line width=0.5pt,draw=blue!80!white] table[x=t,y=xm] {slike/AMMDNF.txt};
+				\addplot[smooth,color=red,line width=1pt] table[x=t,y=x2] {slike/AMMDNF.txt};
+			\end{axis}
+	\end{tikzpicture}
+	
+	\caption{} 
+\end{figure}

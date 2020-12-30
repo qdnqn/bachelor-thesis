@@ -1,0 +1,139 @@
+%wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+% Ansible
+%wwwwwwwwwwwwwwwww
+
+\documentclass[../diplomskiRad.tex]{subfiles}
+
+\begin{document}
+
+\chapter{Uvod}
+Ansible je open-source alat za menadžment infrastrukture, instaliranje potrebnih okruženja i automatizacije deployment-a aplikacija. Ansible nam omogućava uvođenje koncepta Infrastructure as Code (IaC) kao i ostalih DevOps principa. 
+\\\\
+Ansible je izgrađen na sljedećim principima:
+\begin{itemize}
+    \item \textbf{Bez agenta}: Ansible se u potpunosti oslanja na SSH protokol za realizaciju zadanih akcija. U slučaju Windows operativnog sistema se oslanja na WinRM protokol. Ne koristi druge portove, servise niti specijalne agente da bi interreagovao sa "target" host-om.
+    \item \textbf{Minimalistički pristup}: Upravljanje novim okruženjima ne bi trebalo da zahtjeva instalaciju novog software-a.
+    \item \textbf{Deskriptivnost}: Omogućivanje deskriptivnog opisa konfiguracije infrastrukture, instaliranja potrebnih zavisnosti ili bilo kojih drugih akcija, koji je čitljiv od strane ljudi i računara.
+    \item \textbf{Jednostavnost}: Krivulja učenja treba biti jednostavna i alat treba biti intuitivan za korištenje.
+\end{itemize}
+\\ \\
+Ansible je izgrađen koristeći imperativnu paradigmu što bi značilo da je zadatak korisnika da definiše jasan i precizan niz koraka koji će se izvršiti po istom redoslijedu koji je definisan. Drugi alati, kao što su \textbf{Puppet} i \textbf{Cheff}, koriste deklarativnu paradigmu. Deklarativni pristup od korisnika sakriva način implementacije logike rješavanja redoslijeda rada zadanih akcija. Ova činjenica za sobom povlači potrebu više iteracija da bi alat mogao sam odrediti koje su akcije ovisne o drugim akcijama.
+\\\\
+Također kao bitnu stavku potrebno je izdvojiti da Ansible garantira koncept idempotencije u core modulima. Idemopotencija je koncept posuđen iz matematike. Ova osobina garantira da je rezultat određene akcije kada se odradi jednom isti kao i kada se akcija odradi više puta. Da bi shvatili koncept možemo iskoristiti primjer množenja sa nulom.
+\newpage
+\clearpage
+\nodeident 
+Dakle Ansible nam omogućava da deskriptivno definišemo model za definiciju infrastrukture. Primjer zadane konfiguracije za Ansible u obliku YAML file-a, na šta ćemo se detaljnije fokusirati kasnije, je dat ispod:\\
+\setlistingyaml
+\begin{lstlisting}
+- name: install packages
+	yum:
+		name: "{{ item }}"
+		state: latest
+	with_items:
+		- dstat
+		- lsof
+		- mailx
+		- rsync
+\end{lstlisting}
+Primjer je zadužen za instalaciju software-a na linux operativnom sistemu. Korištenjem komande \textbf{yum} inicira se instalacija sljedećih paketa:
+\begin{itemize}
+    \item dstat
+    \item lsof
+    \item mailx
+    \item rsync
+\end{itemize}
+Primjer nije kompleksan oblik konfiguracije infrastrukture ali je validan  IaC. Iz ovog primjera zaključiti da imamo mogućnost upravljanja kodom koji manipuliše infrastrukturom na isti način kao što progamer upravlja izvornim kodom.
+\\\\
+IaC predstavlja veliko unaprijeđenje u odnosu na manuelni način konfiguracije infrastrukture jer nam omogućava:
+\begin{itemize}
+\item Korištenje kontrole verzije (eng: Source control)
+\item Timski rad na izgradnji infrastrukture
+\item Ponovna upotrebljivost
+\item Skaliranje
+\item Testiranje 
+\item Konzistentnost
+\end{itemize}
+\section{Okruženje}
+Za pokretanja svih primjera u ovom radu korišteno je sljedeće okruženje:
+\begin{itemize}
+    \item Ubuntu 18.04 LTS
+    \item Ansible 2.9.11
+    \item Python verzija 2.7.17 
+\end{itemize}
+Verzije dodatno korištenih alata biće navedene po pojavljivanju.
+\newpage
+\section{Teorijska pozadina}
+Pored samog alata za automatizaciju da bi shvatili širu sliku potrebno je upoznati se sa pojedinim terminima, koji su relativno novi, te definisati korištene koncepte i paradigme iz različitih oblasti. Objašnjenja su veoma kratka i precizna jer dublja analiza navedenih stavki izlazi iz opsega ovog rada.
+\subsection{Kontrola verzije}
+Kontrola verzije (eng.Source control) je praksa praćenja i upravljanja promjenama u izvornom kodu. Sistem kontrole verzije (eng. SCM) pruža uvid u historiju izmjena izvornog koda i omogućava rješavanje konflikata kada se spajaju izmjene iz različitih izvora. \textbf{Kada se spominje izvorni kod odnosi se na izvorni kod aplikacije koja se razvija.}
+\\\\
+Popularni SCM su Git, SVN, CVS, itd. Značajno se koriste i online implementacije navedenih sistema kao što su Github ili GitLab (jedni od mnogo).
+\subsection{Build}
+U razvoju software-a \textbf{build} predstavlja proces konverzije izvornog koda u artifakte koji se mogu pokrenuti na računaru. Build je end-to-end proces koji se sastoji iz više koraka:
+\begin{itemize}
+    \item Kontrola verzije
+    \item Kvaliteta koda
+    \item Kompajliranje i linkanje
+\end{itemize}
+Za kompleksne projekte build proces je kompleksan. Na takvim projektima koriste se build alati kao što su
+\begin{itemize}
+    \item make
+    \item maven
+    \item gradle
+\end{itemize}
+koji nam znatno olakšavaju i automtiziraju cijeli build proces. U ovom radu korišten je \textbf{maven}. 
+\\\\
+Kao rezultat build procesa produciraju se \textbf{artifakti}. Sljedeći korak predstavlja stavljanje artifakta u produkciju. To nam omogućava da našoj aplikaciji mogu pristupiti krajnji korisnici. Termin koji opisuje ovaj korak je \textbf{eng. deploy} što će se koristiti dalje u radu.
+\subsection{DevOps}
+DevOps je relativno mlado polje. Predstavlja spoj Development, Operations i Quality assurance timova. Trenutno ne postoji unificirana definicija za DevOps. Međutim esencijalna praksa svakog DevOps tima predstavlja:
+\begin{itemize}
+    \item Continuous integration
+    \item Continuous delivery
+    \item Continuous deployment
+    \item Infrastructure as Code
+    \item Monitoring i mjerenja
+    \item Automatizacija procesa
+\end{itemize}
+\subsubsection{Continuous integration}
+Continuous Integration (CI) je proces automatizacije \textbf{build}-a i testiranja koda svaki puta kada neko primjeni nove promjene na kontroli verzije. Popularan termin je \textbf{eng. commit} što će se i koristiti dalje u radu.
+\subsubsection{Continous delivery}
+Continuous Delivery (CD) je proces automatizacije build-a, testiranja, konfiguracije i pripreme za deploy-a u produkcijsko okruženje. CD osigurava da u svakom trenutku imate artifakte koji su spremni za deploy u produkcijsko okruženje.
+\subsubsection{Continous Deployment}
+Continous Deployment predstavlja deployment u produkcijsko okruženje.
+\subsubsection{Monitoring i mjerenja}
+Monitoring nam daje povratne informacije iz produkcijskog okruženja. Monitoring dostavlja informacije o performansama aplikacije i načinu korištenja aplikacije.
+\\\\
+Monitoring predstavlja značajan dio procesa. U svakom trenutku potrebne su nam informacije o stanju aplikacije u produkcijskom okruženju. Ako se desi neki problem potrebno je obavijestiti one koji su zaduženi za održavanje aplikacije u optimalnom stanju. Također monitoring i mjerenja nam omogućavaju uvid u tačke aplikacije koje je potrebno optimizirati tzv \textbf{eng. bottlenecks}.
+\subsubsection{Infrastructure as Code}
+Infrastructure as Code (Iac) smo se već dotakli u uvodu međutim definirat ćemo termin precizno: IaC predstavlja način da deskriptivnim modelom definišemo konfiguraciju infrastrukture (Mreže, Virtualnih mašina, Kontejnera, Fizičkih servera, Load balancer-a, itd.). Sve koncepte iz razvoja software-a, kao CI ili CD, možemo primjeniti na razvoju infrastrukture. \\\\
+IaC nam omogućava da proces razovja infrastrukture može biti automatiziran, konzistentan i ponovljiv.
+\subsubsection{Automatizacija procesa}
+Automatizacija procesa u DevOps timu je konstantan proces. Potrebno je konstantno analizirati procese da bi otkrili one koji se ponavljaju i koje je moguće automatizirati da bi se proces razvoja apliakcija ubrzao.
+\
+\subsection{Mikroservisna i monolitna arhitektura}
+\subsubsection{Monolitna arhitektura}
+Monolitna arhitektura opisuje arhitekturu aplikacije, koja se sastoji od više modula kombiniranih u obliku biblioteka ili slojeva, pokrenute unutar jednog procesa ili kontejnera. Loša strana ovakvog dizajna aplikacije je skalabilnost. Često je potreba za skaliranjem samo u određenim modulima aplikacije. Međutim ovakvu arhitekturu je moguće skalirati samo kao cjelinu što nam ostavlja mnogo neiskorištenih resursa. Ispod je dat oblik ovakve arhitekture.
+\begin{figure}[H]
+\centering
+ \includegraphics[scale=0.75]{slike/monolithic.pdf}
+ \caption{Monolitna arhitektura}
+ \label{ref_slika1}
+\end{figure}
+\noident Vidimo kada bi se vršilo skaliranje ove aplikacije da bi bilo potrebno skalirati kompletan blok \textbf{Modules}, \textbf{Web App} i \textbf{API} (Unutar ServerHost bloka). Rješenje ovog problema predstavljaju novi dizajn aplikacija: \textbf{Cloud-native} aplikacije. Popularan termin je mikroservisna arhitektura. Objašnjenje je dato u sljedećoj sekciji.
+\subsubsection{Mikroservisna arhitektura}
+Mikroservisna arhitektura je arhitektura u kojoj se svaki od modula tretira kao zasebna aplikacija. Svaki modul ima veoma jasan i "mikro" zadatak odakle i potiče naziv mikroservis. Mikroservisna arhitektura predstavlja suprotnost od monolitne arhitekture i ima mnoge prednosti u enterprise aplikacijama. Ispod je dat primjer moguće mikroservisne arhitekture.
+\begin{figure}[H]
+\centering
+ \includegraphics[scale=0.75]{slike/microservice.pdf}
+ \caption{Mikroservisna arhitektura}
+ \label{ref_slika2}
+\end{figure}
+Ako analiziramo blok šemu i uporedimo sa monolitnom arhitekturom možemo zaključiti da se u mikroservisnoj arhitekturu svaki modul ponaša kao proces. Svaki modul je izoliran od drugih korištenjem \textbf{kontejnera} i naziva se mikroservis. Svo rutiranje između mikroservisa kao i vanjskog svijeta se odvija preko API modula. Svaki mikroservis je samoodrživ i posjeduje svoju bazu podataka.
+\\\\
+Kako se svaki modul nalazi u izoliranom okruženju, od ostalih modula, možemo vršiti skaliranje samo onih modula koji predstavljaju bottleneck aplikacije. Skaliranje se vrši horizontalno. Kako koristimo kontejnere to znači da vršimo repliciranje kontejnera koji sadrži ciljani modul.
+\\\\
+Blok šema \ref{ref_slika2} predstavlja pojednostavljenu verziju procesa. Implementacija ovakve arhitekture u praksi je mnogo kompleksna i koriste se razni alati da bi se ona omogućila kao i sam DevOps i sve njegove komponente.
+\\\\
+Alate koji omogućavaju i automtiziraju implementaciju ove arhitekture ćemo detaljnije obraditi u sklopu ovog rada te oni ne spadaju u teorijsku pozadinu.
+\end{document}

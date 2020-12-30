@@ -1,0 +1,64 @@
+%Univerzitet u Tuzli
+%Fakultet elektrotehnike
+%Gogic Asmir
+\begin{titlepage}
+\begin{center}
+ \noindent \MakeUppercase{\fontsize{14}{0}\selectfont\NazivUniverziteta}\\
+\noindent \MakeUppercase{\fontsize{14}{0}\selectfont\NazivFakulteta}
+\tikz{\draw[line width=1pt] (0,0) -- (15,0);}
+
+\end{center}
+
+
+\vspace*{70mm}
+
+\begin{center}
+{\sc\fontsize{30}{0}\selectfont ZAVRŠNI RAD}
+
+\vspace{3mm}
+
+{\sc\fontsize{16}{0}\selectfont\MakeUppercase Prvog Ciklusa Studija}
+
+\vspace{10mm}
+
+{\fontsize{28}{0}\selectfont\sc\NazivRada}
+
+\vspace{25mm}
+
+
+\fontsize{14}{0}\selectfont
+\begin{center}
+STUDENT
+\end{center}
+
+% \vspace{3mm}
+
+\fontsize{22}{0}\selectfont
+\begin{center}
+\sc \Student
+\end{center}
+
+\vfill
+
+
+
+% \begin{minipage}{0.49\textwidth}
+% % \begin{center}
+% \Mentor
+% % \end{center}
+% \end{minipage}
+% \begin{minipage}{0.49\textwidth}
+% % \begin{center}
+% \hfill{}\Student
+% % \end{center}
+% \end{minipage}
+
+
+
+
+\vfill
+\fontsize{16}{0}\selectfont
+\MjestoGodina
+\end{center}
+\end{titlepage}
+

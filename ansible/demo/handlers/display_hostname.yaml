@@ -1,0 +1,7 @@
+---
+- name: Display hostname
+  become: true
+  command:
+    cmd: cat /etc/hostname 
+  register: hostname
+  notify: debug

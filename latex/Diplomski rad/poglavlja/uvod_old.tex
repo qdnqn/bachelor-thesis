@@ -1,0 +1,280 @@
+%wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww
+% Prvo poglavlje
+%wwwwwwwwwwwwwwwww
+\documentclass[../diplomskiRad.tex]{subfiles}
+
+\begin{document}
+
+\chapter{Uvod}
+Završni(diplomski) rad mora biti formatiran u skladu sa A4 formatom\footnote{marginama: 30mm sa lijeve i donje strane i 25mm sa desne i gornje strane}. Naslovnica diplomskog rada mora sadržavati
+\begin{itemize}
+ \item Naziv univerziteta,
+ \item Naziv fakulteta,
+ \item Tekst \textit{Završni rad Prvog ciklusa studija}, centriran vertikalno i horizontalno,
+ \item Naziv završnog rada,
+ \item Ime i prezime studenta,
+ \item Ime i prezime mentora,
+ \item Mjesto, mjesec i godinu.
+\end{itemize}
+
+
+
+Sve \textit{slike}, \textbf{dijagrami}, \color{red}{tabele} \color{black} i jednačine moraju biti \underline{referencirane}. Svaka slika, tabela, dijagram i shema mora imati naziv.
+
+\section{Naziv prve sekcije}
+
+Članke referenciramo koristeći makro \texttt{\textbackslash cite$\lbrace\rbrace$} kao \cite{bib:PLC1} \cite{bib:TURBOCODE2} pri čemu se članci formatiraju u skladu sa konvencijom u file-u \texttt{reference.tex}. Članci unutar file-a \texttt{reference.tex} moraju biti poredani onim redoslijedom koji se pojavljuju u diplomskom(završnom) radu.
+
+\section{Jednačine}
+U \LaTeX-u postoji više načina za prikazivanje matematičkih formula, jednačina i relacija. Primjer jednačine sa brojačem je jednačina \ref{ref_equ1}
+\begin{equation}
+ x(t) = \sin(100\pi t)^2
+\label{ref_equ1}
+\end{equation}
+ili bez brojača
+\begin{equation}
+ x(t) = \frac{1-\cos(200\pi t)}{2} 
+\nonumber
+\end{equation}
+
+
+
+$L(u_k) =   \ln \left( \frac{ \displaystyle\sum_{n,m=u_k} \tilde{\alpha}^{n,m}_{k} \cdot  \tilde{\beta}^{n,m}_{k+1} \cdot B_k^{n,m}  \cdot \exp \left( \frac{L_c}{2} \left( y^{s,1}_{k} c^{s,1}_{k} + y^{s,2}_{k} c^{s,2}_{k} + y^{p,j}_{k} c^{p,j}_{k}\right) \right)  }{ \displaystyle\sum_{n,m=00} \tilde{\alpha}^{n,m}_{k} \cdot  \tilde{\beta}^{n,m}_{k+1} \cdot B_k^{n,m}  \cdot \exp \left( \frac{L_c}{2} \left( y^{s,1}_{k} c^{s,1}_{k} + y^{s,2}_{k} c^{s,2}_{k} + y^{p,j}_{k} c^{p,j}_{k}\right) \right) } \right)$
+
+
+\[
+  f(x) = \displaystyle\left\{
+  \begin{array}{r l}
+    x & \quad \text{$x$ parno}\\
+    -x & \quad \text{$x$ neparno}\\
+  \end{array} \right.
+\]
+
+
+
+Skraćenice formiramo koristeći makro \texttt{nomenclature} npr UNTZ \nomenclature{UNTZ}{Univerzitet u Tuzli}, FE \nomenclature{FE}{Fakultet elektrotehnike}... Listu skraćenica formiramo koristeći komandu \\
+
+
+\textit{makeindex diplomski\_rad.nlo -s nomencl.ist -o diplomski\_rad.nls}\\
+
+
+ unutar komandnog prompta. Prije izvršenja date komande potrebno je pozicionirati se u direktoriji diplomski\_rad. 
+
+
+
+\newpage  % forsiramo novu stranicu
+
+\section{Slike}
+Latex obezbjeđuje  
+\begin{enumerate}[a)]
+ \item Direktno uključivanje slika sa ekstenzijama png, jpg, pdf i eps (paket \texttt{graphicx})
+ \item PGF/TiKz interpreter pogodan za
+\begin{itemize}
+ \item crtanje slika visokog kvaliteta,
+ \item prikaz i generisanje grafika,
+ \item generisanje animacija 
+\end{itemize}
+
+\end{enumerate}
+
+Referenciranje slike unutar teksta vršimo na sljedeći način Sl. \ref{ref_slika1}. 
+
+\begin{figure}[H]
+\centering
+ \includegraphics[scale=0.8]{slike/ictlab.jpg}
+ \caption{Naziv slike}
+ \label{ref_slika1}
+\end{figure}
+
+Pozicija slike u dokumentu bi trebala biti na početku, kraju ili ako to nije moguće oko sredine stranice. Gdje god je to moguće (po mogućnosti nacrtati sve grafike) koristiti vektorsku grafiku (dijagrami, blok sheme i sl.) koji su pohranjeni u vektorskim formatima (npr. wmf, eps, pdf) stoga što oni nisu povezani sa rezolucijom za razliku od rasterskih slika.
+
+
+Za fotografije koritimo rastersku sliku (npr. bmp, jpg, png, gif, tiff itd). Za razliku od vektorske slike, kod rasterske slike moramo voditi računa o dimenzijama kada se dokument prikazuje na ekranu ili na papiru, a što je povezano sa rezolucijom.
+
+
+Preporučuje se koristiti sljedeće rezolucije za rastersku grafiku:
+\begin{itemize}
+\item Kolor i crno bijele fotografije 300dpi.
+\item Linijski dijagrami (grafovi) 600 dpi
+\end{itemize}
+
+Za kreiranje vektorske grafike mogu se koristiti sljedeći programi:
+\begin{itemize}
+\item Visio
+
+\item CorelDraw
+
+\item Adobe Illustrator
+
+\item AutoCAD
+
+\end{itemize}
+
+Prikaz krivih zapisanih tabelarno sl. \ref{ref_slika2} u tekstualnom file-u uz pomoć paketa \texttt{tikz, pgfplots}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}
+\begin{axis}[ylabel=\small{Propusnost(Mbps)}, xlabel=\small{t(s)},
+legend style={at={(0.5,1.1)}, anchor=north,legend columns=-1},xmin = 0,xmax=2,xmajorgrids] 
+
+\addplot[smooth,red,line width=1pt]  table[x=x,y=y]
+ {rezultati/stat_ThrougputUpload_0_16_44_0_0_1.tr};
+\addlegendentry{\scriptsize \texttt{Upload}};
+
+\addplot[smooth,blue,line width=1pt]  table[x=x,y=y]
+ {rezultati/stat_ThrougputDownload_0_16_44_0_0_1.tr};
+\addlegendentry{\scriptsize \texttt{Download}};
+
+\end{axis}
+\end{tikzpicture}
+ \caption{Naziv grafika }
+ \label{ref_slika2}
+\end{figure}
+
+Latex omogućava crtanje električnih shema uz pomoć paketa \texttt{cirkuit}
+
+\begin{figure}[H]
+	\centering
+	\subfloat[]{
+	\begin{circuitikz}[european,scale=0.9] 
+	
+	\draw (1,2) node[op amp] (opamp) {};
+	\draw ($(opamp.-)+(0,0)$) to[short,-*] ($(opamp.-)+(-0.5,0)$) to[R,l=$R$,-o] ($(opamp.-)+(-3,0)$);
+	\draw ($(opamp.-)+(-3.25,0)$) node {\small $+$};
+	\draw ($(opamp.+)+(0,0)$) -- ($(opamp.+)+(-0.5,0)$) -- ($(opamp.+)+(-0.5,-1)$);
+	\draw ($(opamp.+)+(-0.5,-1)$) node[ground] {};
+	\draw ($(opamp.-)+(-3,-2)$) node[ground] {};
+	\draw ($(opamp.-)+(-3,-2)$) to[short,-o] ($(opamp.-)+(-3,-2)$);
+	\draw ($(opamp.-)+(-3.25,-2)$) node {\small $-$};
+	\draw ($(opamp.-)+(-3.25,-1)$) node {\small $U_{ul}$};
+	\draw ($(opamp.-)+(-0.5,0)$) -- ($(opamp.-)+(-0.5,1)$) to[C,l=$C$] ($(opamp.-)+(3,1)$) |- ($(opamp.out)+(0,0)$);
+	\draw ($(opamp.out)+(0,0)$) to[short,-o] ($(opamp.out)+(1,0)$);
+	\draw ($(opamp.out)+(1,-1.5)$) to[short,-o]  ($(opamp.out)+(1,-1.5)$);
+	\draw ($(opamp.out)+(1,-1.55)$) node[ground] {};
+	\draw  ($(opamp.out)+(1.25,0)$) node {\small $+$};
+	\draw  ($(opamp.out)+(1.25,-1.5)$) node {\small $-$};
+	\draw ($(opamp.out)+(1.25,-0.75)$) node {\small $U_{iz}$};
+
+	\end{circuitikz}
+	}
+	\hspace{0.75cm}
+	\subfloat[]{
+	\begin{tikzpicture}[scale=0.9]
+
+	\draw[line width=0.4pt, ->,>=latex'] (0,-2) -- (0,2);	
+	\draw[line width=0.4pt, ->,>=latex'] (0,0) -- (5,0);
+	\draw (1,-0.1) -- (1,0.1) (2,-0.1) -- (2,0.1) (3,-0.1) -- (3,0.1) (4,-0.1) -- (4,0.1);
+	\draw (-0.1,1.5) -- (0.1,1.5) (-0.1,-1.5) -- (0.1,-1.5);
+	\draw [line width=1.3pt,red] (0,1.5) -- (1,1.5)  (1,-1.5) -- (2,-1.5) (2,1.5) -- (3,1.5) (3,-1.5) -- (4,-1.5) (4,1.5) -- (5,1.5);
+	\draw [dashed] (1,1.5) -- (1,-1.5) (2,1.5) -- (2,-1.5) (3,1.5) -- (3,-1.5) (4,1.5) -- (4,-1.5);	
+	\draw (3,-0.25) node {\small $0.03$};
+	\draw (2,-0.25) node {\small $0.02$};
+	\draw (1,-0.25) node {\small $0.01$};
+	\draw (4,-0.25) node {\small $0.04$};
+	\draw (-0.35,1.5) node {\small $4$};
+	\draw (-0.45,-1.5) node {\small $-4$};
+	\draw (5,-0.25) node {\small $t(s)$};
+	\draw (0,2.7) node {\small $U_{ul}~(V)$};
+	\end{tikzpicture}
+	}
+\caption{Slika pored slike} 
+\label{slAIE_04_16}
+\end{figure}
+
+
+\section{Tabele}
+Za rad sa tabelama neophodno je uključiti paket $multirow$. Referenciranje tabela unutar teksta vršimo na sljedeći način Tab. \ref{ref_tabela1}. 
+
+\begin{table}[H]
+ \centering\renewcommand{\arraystretch}{1.3}
+
+\begin{tabular}{|c|c|c||c|c|c||c|c|c||c|c|c|}
+
+\hline  \multicolumn{3}{|c||}{{\multirow{2}{*}{ULAZI}}} & \multicolumn{3}{c||}{TRENUTNO} & \multicolumn{3}{c||}{NAREDNO} & \multicolumn{3}{c|}{{\multirow{2}{*}{IZLAZI}}}\\
+\multicolumn{3}{|c||}{} & \multicolumn{3}{c||}{STANJE} & \multicolumn{3}{c||}{STANJE} & \multicolumn{3}{c|}{}\\ \hline 
+
+\multicolumn{1}{|c|}{$u_2$} & \multicolumn{1}{c|}{$u_1$} & \multicolumn{1}{c||}{$x_0$} & \multicolumn{1}{c|}{$s_1$} & \multicolumn{1}{c|}{$s_2$} & \multicolumn{1}{c||}{$s_3$} & \multicolumn{1}{c|}{$s_1$} & \multicolumn{1}{c|}{$s_2$} & \multicolumn{1}{c||}{$s_3$} & \multicolumn{1}{c|}{$y_2$} & \multicolumn{1}{c|}{$y_1$} & \multicolumn{1}{c|}{$y_0$}\\ \hline\hline
+
+
+0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\ \hline
+0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 1 \\ \hline
+0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\ \hline
+0 & 0 & 0 & 0 & 1 & 1 & 0 & 0 & 1 & 0 & 0 & 1 \\ \hline\hline
+0 & 0 & 0 & 1 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 \\ \hline
+0 & 0 & 0 & 1 & 0 & 1 & 0 & 1 & 0 & 0 & 0 & 1 \\ \hline
+0 & 0 & 0 & 1 & 1 & 0 & 0 & 1 & 1 & 0 & 0 & 0 \\ \hline
+0 & 0 & 0 & 1 & 1 & 1 & 0 & 1 & 1 & 0 & 0 & 1 \\ \hline\hline
+
+\end{tabular}
+\caption{Naziv tabele}
+\label{ref_tabela1}
+\end{table}
+
+\newpage
+
+\section{Pakiranje koda}
+
+Primjer pakiranja Octave koda 
+
+\setlistingoctave
+\begin{lstlisting}
+clear all
+close all
+clc
+
+t = 0:0.01:1;
+x = sin(2*pi*t);
+y(1) = x(1)
+for k=2:size(t,2)
+  y = x(2) - x(1);
+end
+
+subplot(2,1,1)
+plot(t,x)
+subplot(2,1,2)
+plot(t,y,"r")
+\end{lstlisting}
+
+\vspace{10mm}
+
+Primjer pakiranja MATLAB koda 
+
+\setlistingmatlab
+\begin{lstlisting}
+clear all
+close all
+clc
+
+t = 0:0.01:1;
+x = sin(2*pi*t);
+y(1) = x(1)
+for k=2:size(t,2)
+  y = x(2) - x(1);
+end
+
+subplot(2,1,1)
+plot(t,x)
+subplot(2,1,2)
+plot(t,y,'r')
+\end{lstlisting}
+
+\vspace{10mm}
+
+Primjer pakiranja C/C++ koda 
+
+\setlistingccpp
+\begin{lstlisting}
+#include <stdio.h>
+
+int main(void)
+{
+  int x = 0;
+  for(int k=0;k<5;k++)
+  {
+    printf("Vrijednost x: %d",x);
+  }
+  return 0;
+}
+\end{lstlisting}
+
+\end{document}
